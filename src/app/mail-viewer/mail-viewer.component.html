@@ -1,0 +1,31 @@
+<h1>Consulta de correos</h1>
+
+<!-- Campo para el correo -->
+<label for="correo">Correo electrónico:</label>
+<input
+  id="correo"
+  [(ngModel)]="correo"
+  type="email"
+  placeholder="ejemplo@dominio.com"
+  required
+/>
+<!-- Campo para clave -->
+<label for="clave">Clave de acceso:</label>
+<input id="clave" [(ngModel)]="clave" type="text" placeholder="Clave secreta" />
+<!-- Campo para plataforma (opcional) -->
+<label for="plataforma">Plataforma:</label>
+<select id="plataforma" [(ngModel)]="plataforma">
+  <option value="Disney">Disney</option>
+  <option value="Netflix">Netflix</option>
+  <option value="Prime">Prime</option>
+  <option value="Chatgpt">Chatgpt</option>
+  <option value="Crunchyroll">Crunchyroll</option>
+</select>
+
+<!-- Botón para consultar -->
+<br />
+<button (click)="cargarCorreo()">Consultar</button>
+
+<!-- Mostrar resultado -->
+<hr />
+<div [innerHTML]="emailHtml" class="email-content"></div>

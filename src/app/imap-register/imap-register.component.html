@@ -1,0 +1,23 @@
+<h2>Registrar cuenta IMAP</h2>
+
+<form (ngSubmit)="registrarCuenta()">
+  <label for="email">Correo IMAP:</label>
+  <input id="email" type="email" [(ngModel)]="email" name="email" required />
+  <br /><br />
+
+  <label for="password">Contraseña:</label>
+  <input
+    id="password"
+    type="password"
+    [(ngModel)]="password"
+    name="password"
+    required
+  />
+  <br /><br />
+
+  <button type="submit">Registrar</button>
+</form>
+
+<div *ngIf="mensaje" style="margin-top: 15px">
+  <strong [innerHTML]="mensaje"></strong>
+</div>
