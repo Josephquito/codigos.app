@@ -1,0 +1,159 @@
+<div class="min-h-screen bg-gray-100 px-4 py-8">
+  <div class="max-w-6xl mx-auto space-y-8">
+    <!-- Título -->
+    <h1 class="text-4xl font-bold text-center text-gray-800">
+      Administrar Cuentas
+    </h1>
+
+    <!-- Filtro de búsqueda -->
+    <div class="flex justify-center">
+      <label
+        class="input input-bordered flex items-center gap-2 w-full max-w-md"
+      >
+        <svg
+          class="w-5 h-5 text-gray-500"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+
+        <input
+          type="text"
+          [(ngModel)]="filtroCorreo"
+          placeholder="Buscar correo..."
+          (input)="buscarCorreo()"
+          class="grow"
+        />
+      </label>
+    </div>
+
+    <!-- Registro de nueva clave -->
+    <div class="space-y-4">
+      <h3 class="text-xl font-semibold text-gray-800">Ingresar correo</h3>
+
+      <form
+        (submit)="registrarCuenta()"
+        class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
+      >
+        <input
+          [(ngModel)]="nuevaCuenta.emailAlias"
+          name="email"
+          placeholder="Correo"
+          class="input input-bordered w-full"
+          required
+        />
+        <input
+          [(ngModel)]="nuevaCuenta.clave"
+          name="clave"
+          placeholder="Clave de la plataforma"
+          class="input input-bordered w-full"
+          required
+        />
+        <select
+          [(ngModel)]="nuevaCuenta.plataforma"
+          name="plataforma"
+          class="select select-bordered w-full"
+          required
+        >
+          <option disabled selected value="">Plataforma</option>
+          <option value="disney">Disney</option>
+          <option value="netflix">Netflix</option>
+          <option value="prime">Prime</option>
+          <option value="chatgpt">Chatgpt</option>
+          <option value="crunchyroll">Crunchyroll</option>
+        </select>
+
+        <button type="submit" class="btn btn-neutral w-full">Agregar</button>
+      </form>
+      <hr />
+    </div>
+
+    <!-- Tabla de cuentas -->
+    <div
+      class="overflow-x-auto rounded-box border border-base-content/10 bg-white shadow p-4"
+    >
+      <table class="table table-zebra border border-base-300 rounded-md">
+        <thead class="bg-gray-100 text-gray-700 text-center">
+          <tr>
+            <th class="px-3 py-2">Correo</th>
+            <th class="px-3 py-2">Disney</th>
+            <th class="px-3 py-2">Netflix</th>
+            <th class="px-3 py-2">Prime</th>
+            <th class="px-3 py-2">ChatGPT</th>
+            <th class="px-3 py-2">Crunchyroll</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cuenta of cuentas" class="text-center align-middle">
+            <td class="font-semibold text-sm px-3 py-2 text-gray-800">
+              {{ cuenta.correo }}
+            </td>
+
+            <ng-container *ngFor="let plataforma of plataformas">
+              <td class="px-3 py-2">
+                <div
+                  *ngIf="editando[cuenta.correo]?.[plataforma]; else claveNormal"
+                  class="flex flex-col items-center gap-1"
+                >
+                  <input
+                    [(ngModel)]="cuenta[plataforma]"
+                    placeholder="Escribe la clave"
+                    class="input input-sm input-bordered w-32 text-center"
+                  />
+                  <div class="flex gap-1">
+                    <button
+                      class="btn btn-xs btn-outline btn-success tooltip"
+                      data-tip="Guardar"
+                      (click)="
+                        guardarClave(
+                          cuenta.correo,
+                          plataforma,
+                          cuenta[plataforma]
+                        )
+                      "
+                    >
+                      ✅
+                    </button>
+
+                    <!-- Mostrar el botón eliminar solo si la clave existe -->
+                    <button
+                      *ngIf="
+                        cuenta[plataforma] &&
+                        cuenta[plataforma] !== 'Sin asignar'
+                      "
+                      class="btn btn-xs btn-outline btn-error tooltip"
+                      data-tip="Eliminar"
+                      (click)="eliminarCuenta(cuenta.correo, plataforma)"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+
+                <ng-template #claveNormal>
+                  <span
+                    class="text-sm cursor-pointer hover:underline text-center block text-green-600 font-medium"
+                    (click)="editarUnico(cuenta.correo, plataforma)"
+                  >
+                    {{
+                      cuenta[plataforma] !== "Sin asignar"
+                        ? cuenta[plataforma]
+                        : "+ AÑADIR"
+                    }}
+                  </span>
+                </ng-template>
+              </td>
+            </ng-container>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
