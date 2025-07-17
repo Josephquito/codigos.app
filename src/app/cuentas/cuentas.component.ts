@@ -22,6 +22,7 @@ export class CuentasComponent implements OnInit {
     plataforma: 'disney',
     clave: '',
   };
+  cargando = false;
 
   readonly apiUrl = 'https://codigos-api.onrender.com/cuentas';
 
@@ -62,6 +63,8 @@ export class CuentasComponent implements OnInit {
   }
 
   registrarCuenta() {
+    this.cargando = true;
+
     const body = {
       emailAlias: this.nuevaCuenta.emailAlias.trim().toLowerCase(),
       plataforma: this.nuevaCuenta.plataforma.trim().toLowerCase(),
@@ -72,9 +75,17 @@ export class CuentasComponent implements OnInit {
       Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
     };
 
-    this.http.post(this.apiUrl, body, { headers }).subscribe(() => {
-      this.nuevaCuenta = { emailAlias: '', plataforma: 'disney', clave: '' };
-      this.cargarCuentas();
+    this.http.post(this.apiUrl, body, { headers }).subscribe({
+      next: () => {
+        this.nuevaCuenta = { emailAlias: '', plataforma: 'disney', clave: '' };
+        this.cargarCuentas();
+      },
+      error: (error) => {
+        console.error('Error al registrar cuenta:', error);
+      },
+      complete: () => {
+        this.cargando = false;
+      },
     });
   }
 

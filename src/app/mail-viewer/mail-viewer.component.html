@@ -1,31 +1,74 @@
-<h1>Consulta de correos</h1>
+<div
+  class="min-h-[calc(100vh-64px)] flex items-start justify-center bg-gray-100 px-4 py-8"
+>
+  <div
+    class="mx-auto w-full max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl space-y-6"
+  >
+    <div class="bg-white rounded-lg shadow-md p-6 space-y-4">
+      <!-- Título -->
+      <h1 class="text-3xl font-bold text-center text-gray-800">
+        Consultar Código
+      </h1>
 
-<!-- Campo para el correo -->
-<label for="correo">Correo electrónico:</label>
-<input
-  id="correo"
-  [(ngModel)]="correo"
-  type="email"
-  placeholder="ejemplo@dominio.com"
-  required
-/>
-<!-- Campo para clave -->
-<label for="clave">Clave de acceso:</label>
-<input id="clave" [(ngModel)]="clave" type="text" placeholder="Clave secreta" />
-<!-- Campo para plataforma (opcional) -->
-<label for="plataforma">Plataforma:</label>
-<select id="plataforma" [(ngModel)]="plataforma">
-  <option value="Disney">Disney</option>
-  <option value="Netflix">Netflix</option>
-  <option value="Prime">Prime</option>
-  <option value="Chatgpt">Chatgpt</option>
-  <option value="Crunchyroll">Crunchyroll</option>
-</select>
+      <!-- Correo -->
+      <div class="form-control w-full">
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="correo"
+          placeholder="ejemplo@jotavix.com"
+          required
+          class="input input-bordered w-full"
+        />
+      </div>
 
-<!-- Botón para consultar -->
-<br />
-<button (click)="cargarCorreo()">Consultar</button>
+      <!-- Clave -->
+      <div class="form-control w-full">
+        <input
+          type="text"
+          name="password"
+          [(ngModel)]="clave"
+          placeholder="Contraseña"
+          required
+          class="input input-bordered w-full"
+        />
+      </div>
 
-<!-- Mostrar resultado -->
-<hr />
-<div [innerHTML]="emailHtml" class="email-content"></div>
+      <!-- Plataforma -->
+      <select
+        id="plataforma"
+        name="plataforma"
+        [(ngModel)]="plataforma"
+        required
+        class="select select-bordered w-full"
+      >
+        <option disabled selected value>Selecciona una plataforma</option>
+        <option value="Disney">Disney</option>
+        <option value="Netflix">Netflix</option>
+        <option value="Prime">Prime</option>
+        <option value="Chatgpt">Chatgpt</option>
+        <option value="Crunchyroll">Crunchyroll</option>
+      </select>
+
+      <!-- Botón -->
+      <button
+        class="btn btn-neutral w-full"
+        (click)="cargarCorreo()"
+        [disabled]="cargando"
+      >
+        Ver Código
+        <span
+          *ngIf="cargando"
+          class="loading loading-spinner loading-sm ml-2"
+        ></span>
+      </button>
+
+      <!-- Resultado -->
+      <hr />
+      <div
+        class="max-h-96 overflow-auto bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200"
+        [innerHTML]="emailHtml"
+      ></div>
+    </div>
+  </div>
+</div>

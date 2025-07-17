@@ -1,1 +1,72 @@
-<router-outlet />
+<!-- Navbar -->
+<div class="navbar bg-base-100 shadow-sm">
+  <div class="flex-1">
+    <a routerLink="/" class="btn btn-ghost text-xl">JOTAVIX</a>
+  </div>
+
+  <!-- Versión móvil -->
+  <div class="flex-none lg:hidden">
+    <div class="dropdown dropdown-end">
+      <button type="button" class="btn btn-ghost btn-circle">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          class="h-5 w-5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+      <ul
+        class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+      >
+        <li><a routerLink="/correo">Ver Correo</a></li>
+        <ng-container *ngIf="isLoggedIn; else loginLink">
+          <li><a routerLink="/registrar">Registrar Gmail</a></li>
+          <li><a routerLink="/imap-registrar">Registrar IMAP</a></li>
+          <li><a routerLink="/cuentas">Mis cuentas</a></li>
+          <li>
+            <button (click)="logout()" class="text-red-500">
+              Cerrar sesión
+            </button>
+          </li>
+        </ng-container>
+        <ng-template #loginLink>
+          <li><a routerLink="/login">Acceder</a></li>
+        </ng-template>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Versión escritorio -->
+  <div class="flex-none hidden lg:flex">
+    <ul class="menu menu-horizontal px-1">
+      <li><a routerLink="/correo">Ver Correo</a></li>
+      <ng-container *ngIf="isLoggedIn; else loginBtn">
+        <li><a routerLink="/registrar">Registrar Gmail</a></li>
+        <li><a routerLink="/imap-registrar">Registrar IMAP</a></li>
+        <li><a routerLink="/cuentas">Mis cuentas</a></li>
+        <li>
+          <button
+            (click)="logout()"
+            class="btn btn-error btn-sm text-white ml-2"
+          >
+            Cerrar sesión
+          </button>
+        </li>
+      </ng-container>
+      <ng-template #loginBtn>
+        <li><a routerLink="/login">Acceder</a></li>
+      </ng-template>
+    </ul>
+  </div>
+</div>
+
+<!-- Aquí irá tu contenido -->
+<router-outlet></router-outlet>

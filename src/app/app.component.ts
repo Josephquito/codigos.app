@@ -1,19 +1,23 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService } from './guards/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule],
-  template: `
-    <nav style="margin: 20px;">
-      <a routerLink="/registrar" style="margin-right: 20px;">Registrar Gmail</a>
-      <a routerLink="/correo">Ver Correo</a>
-      <a routerLink="/imap-registrar" style="margin-left: 20px;"
-        >Registrar IMAP</a
-      >
-    </nav>
-    <router-outlet></router-outlet>
-  `,
+  imports: [CommonModule, RouterOutlet, RouterLink],
+  templateUrl: './app.component.html',
 })
-export class AppComponent {}
+export class AppComponent {
+  auth = inject(AuthService);
+
+  get isLoggedIn(): boolean {
+    return this.auth.isAuthenticated();
+  }
+
+  logout() {
+    this.auth.logout();
+    location.href = '/login';
+  }
+}

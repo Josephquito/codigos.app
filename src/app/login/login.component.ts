@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../guards/auth.service'; // ← IMPORTA el servicio
 
 @Component({
   selector: 'app-login',
@@ -15,9 +16,13 @@ export class LoginComponent {
   email = '';
   password = '';
   errorMessage = '';
-  cargando = false; // ← Nueva propiedad
+  cargando = false;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private auth: AuthService // ← INYECTA el servicio
+  ) {}
 
   login() {
     this.cargando = true;
@@ -30,9 +35,8 @@ export class LoginComponent {
       })
       .subscribe({
         next: (res) => {
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('role', res.role);
-          this.router.navigate(['/']);
+          this.auth.setToken(res.token, res.role); // ← Usa el servicio
+          this.router.navigate(['/correo']); // ← O cualquier ruta protegida
         },
         error: () => {
           this.errorMessage = 'Credenciales incorrectas';

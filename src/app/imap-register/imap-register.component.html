@@ -1,23 +1,45 @@
-<h2>Registrar cuenta IMAP</h2>
+<div
+  class="min-h-[calc(100vh-64px)] flex items-start justify-center bg-gray-100 px-4 py-8"
+>
+  <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md space-y-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800">
+      Registrar cuenta IMAP
+    </h2>
 
-<form (ngSubmit)="registrarCuenta()">
-  <label for="email">Correo IMAP:</label>
-  <input id="email" type="email" [(ngModel)]="email" name="email" required />
-  <br /><br />
+    <form (ngSubmit)="registrarCuenta()" class="space-y-4">
+      <!-- Campo Correo -->
+      <div class="form-control w-full">
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="correo@dominio.com"
+          class="input input-bordered w-full"
+          required
+        />
+      </div>
 
-  <label for="password">Contraseña:</label>
-  <input
-    id="password"
-    type="password"
-    [(ngModel)]="password"
-    name="password"
-    required
-  />
-  <br /><br />
+      <!-- Campo Contraseña -->
+      <div class="form-control w-full">
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Contraseña"
+          class="input input-bordered w-full"
+          required
+        />
+      </div>
 
-  <button type="submit">Registrar</button>
-</form>
+      <!-- Botón Registrar -->
+      <button type="submit" class="btn btn-neutral w-full">Registrar</button>
+    </form>
 
-<div *ngIf="mensaje" style="margin-top: 15px">
-  <strong [innerHTML]="mensaje"></strong>
+    <!-- Mensaje de éxito o error -->
+    <div *ngIf="mensaje" class="mt-4 text-center">
+      <strong [innerHTML]="mensaje"></strong>
+    </div>
+  </div>
 </div>

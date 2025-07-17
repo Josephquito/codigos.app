@@ -17,6 +17,7 @@ export class EmailViewerComponent {
   plataforma: string = '';
   clave: string = '';
   emailHtml!: SafeHtml;
+  cargando = false;
 
   constructor(private http: HttpClient, private sanitizer: DomSanitizer) {}
 
@@ -26,9 +27,10 @@ export class EmailViewerComponent {
 
     if (!this.correo) return;
 
+    this.cargando = true; // ⏳ Inicia carga
+
     const isGmail = this.correo.toLowerCase().endsWith('@gmail.com');
     const base = 'https://codigos-api.onrender.com';
-
     let url = '';
 
     if (this.plataforma) {
@@ -56,6 +58,7 @@ export class EmailViewerComponent {
         }
 
         this.emailHtml = this.sanitizer.bypassSecurityTrustHtml(content);
+        this.cargando = false; // ✅ Finaliza carga
       },
       error: (err) => {
         const mensaje =
@@ -67,6 +70,7 @@ export class EmailViewerComponent {
         this.emailHtml = this.sanitizer.bypassSecurityTrustHtml(
           `<p>${mensaje}</p>`
         );
+        this.cargando = false; // ✅ Finaliza carga también en error
       },
     });
   }

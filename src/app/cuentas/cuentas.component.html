@@ -70,7 +70,18 @@
           <option value="crunchyroll">Crunchyroll</option>
         </select>
 
-        <button type="submit" class="btn btn-neutral w-full">Agregar</button>
+        <button
+          type="submit"
+          class="btn btn-neutral w-full"
+          (click)="registrarCuenta()"
+          [disabled]="cargando"
+        >
+          Agregar
+          <span
+            *ngIf="cargando"
+            class="loading loading-spinner loading-sm ml-2"
+          ></span>
+        </button>
       </form>
       <hr />
     </div>
