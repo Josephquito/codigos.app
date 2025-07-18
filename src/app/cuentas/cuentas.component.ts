@@ -124,4 +124,18 @@ export class CuentasComponent implements OnInit {
     // Activa solo la celda seleccionada
     this.editando[correo] = { [plataforma]: true };
   }
+  eliminarCuentaCompleta(correo: string) {
+    const confirmado = confirm(`¿Eliminar completamente la cuenta ${correo}?`);
+    if (!confirmado) return;
+
+    const headers = {
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+    };
+
+    this.http
+      .delete(`${this.apiUrl}/${encodeURIComponent(correo)}`, { headers })
+      .subscribe(() => {
+        this.cargarCuentas();
+      });
+  }
 }
