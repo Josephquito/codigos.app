@@ -20,8 +20,23 @@
       </div>
 
       <!-- Botón -->
-      <button type="submit" class="btn btn-neutral w-full">
+      <button
+        (click)="registrarGmail()"
+        class="btn btn-neutral w-full"
+        [disabled]="cargando"
+      >
         Registrar Gmail
+        <span
+          *ngIf="cargando"
+          class="loading loading-spinner loading-sm ml-2"
+        ></span>
+      </button>
+
+      <button
+        (click)="renovarToken()"
+        class="btn btn-outline btn-primary w-full mt-3"
+      >
+        Renovar Token
       </button>
     </form>
 
