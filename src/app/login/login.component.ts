@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { HttpClientModule } from '@angular/common/http';
-import { AuthService } from '../guards/auth.service'; // ← IMPORTA el servicio
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../guards/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -12,17 +11,31 @@ import { AuthService } from '../guards/auth.service'; // ← IMPORTA el servicio
   imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './login.component.html',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   email = '';
   password = '';
   errorMessage = '';
   cargando = false;
+  expired = false;
+
+  private platformId = inject(PLATFORM_ID);
 
   constructor(
     private http: HttpClient,
     private router: Router,
-    private auth: AuthService // ← INYECTA el servicio
+    private auth: AuthService
   ) {}
+
+  ngOnInit(): void {
+    // ✅ proteger uso de sessionStorage para que solo corra en browser
+    if (isPlatformBrowser(this.platformId)) {
+      const flag = sessionStorage.getItem('sessionExpired');
+      if (flag === '1') {
+        sessionStorage.removeItem('sessionExpired');
+        this.expired = true;
+      }
+    }
+  }
 
   login() {
     this.cargando = true;
@@ -35,8 +48,8 @@ export class LoginComponent {
       })
       .subscribe({
         next: (res) => {
-          this.auth.setToken(res.token, res.role); // ← Usa el servicio
-          this.router.navigate(['/correo']); // ← O cualquier ruta protegida
+          this.auth.setToken(res.token, res.role);
+          this.router.navigate(['/correo']);
         },
         error: () => {
           this.errorMessage = 'Credenciales incorrectas';

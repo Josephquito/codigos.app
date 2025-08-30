@@ -5,9 +5,16 @@
   </div>
 
   <!-- Versión móvil -->
-  <div class="flex-none lg:hidden">
-    <div class="dropdown dropdown-end">
-      <button type="button" class="btn btn-ghost btn-circle">
+  <div class="flex-none lg:hidden" (click)="$event.stopPropagation()">
+    <div class="dropdown dropdown-end" [class.dropdown-open]="isMenuOpen">
+      <!-- Trigger -->
+      <button
+        type="button"
+        class="btn btn-ghost btn-circle"
+        aria-label="Abrir menú"
+        [attr.aria-expanded]="isMenuOpen ? 'true' : 'false'"
+        (click)="toggleMenu($event)"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -23,22 +30,30 @@
           />
         </svg>
       </button>
+
+      <!-- Menú -->
       <ul
-        class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+        class="menu menu-sm dropdown-content mt-3 z-[9999] p-2 shadow bg-base-100 rounded-box w-52"
+        (click)="$event.stopPropagation()"
+        role="menu"
       >
-        <li><a routerLink="/correo">Ver Correo</a></li>
+        <li><a routerLink="/correo" role="menuitem">Ver Correo</a></li>
         <ng-container *ngIf="isLoggedIn; else loginLink">
-          <li><a routerLink="/registrar">Registrar Gmail</a></li>
-          <li><a routerLink="/imap-registrar">Registrar IMAP</a></li>
-          <li><a routerLink="/cuentas">Mis cuentas</a></li>
           <li>
-            <button (click)="logout()" class="text-red-500">
+            <a routerLink="/registrar" role="menuitem">Registrar Gmail</a>
+          </li>
+          <li>
+            <a routerLink="/imap-registrar" role="menuitem">Registrar IMAP</a>
+          </li>
+          <li><a routerLink="/cuentas" role="menuitem">Mis cuentas</a></li>
+          <li>
+            <button (click)="logout()" class="text-red-500" role="menuitem">
               Cerrar sesión
             </button>
           </li>
         </ng-container>
         <ng-template #loginLink>
-          <li><a routerLink="/login">Acceder</a></li>
+          <li><a routerLink="/login" role="menuitem">Acceder</a></li>
         </ng-template>
       </ul>
     </div>

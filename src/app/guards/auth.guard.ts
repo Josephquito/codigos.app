@@ -8,13 +8,13 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const router = inject(Router);
 
   const currentUrl = route.url.map((segment) => segment.path).join('/');
-  if (currentUrl === 'login') {
-    return true;
+  if (currentUrl === 'login') return true;
+
+  // ✅ si no está autenticado o el token venció, forzamos expiración
+  if (!auth.isAuthenticated()) {
+    auth.forceSessionExpired();
+    return false;
   }
 
-  if (auth.isAuthenticated()) {
-    return true;
-  }
-
-  return router.parseUrl('/login');
+  return true;
 };

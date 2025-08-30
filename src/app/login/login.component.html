@@ -3,8 +3,16 @@
   class="min-h-[calc(100vh-64px)] flex items-start justify-center bg-gray-100 px-4 py-8"
 >
   <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md space-y-4">
+    <!-- Banner de sesión expirada -->
+    <div
+      *ngIf="expired"
+      class="p-3 rounded-md text-sm font-medium text-red-700 bg-red-100 border border-red-300"
+    >
+      ⚠️ Tu sesión ha expirado. Por favor vuelve a iniciar sesión.
+    </div>
+
     <h1 class="text-3xl font-bold text-center text-gray-800">
-      Hola! Admin Inicia Sesion
+      Hola! Admin Inicia Sesión
     </h1>
 
     <!-- Campo Correo -->

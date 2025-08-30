@@ -8,7 +8,7 @@ import { CuentasComponent } from './cuentas/cuentas.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'correo', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'correo', component: EmailViewerComponent },
 

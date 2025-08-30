@@ -1,8 +1,13 @@
+// src/main.ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
 import { AppComponent } from './app/app.component';
-import { routes } from './app/app.routes';
+import { appConfig } from './app/app.config';
 
-bootstrapApplication(AppComponent, {
-  providers: [provideRouter(routes)],
+// 👇 importa tu AuthService
+import { AuthService } from './app/guards/auth.service';
+
+bootstrapApplication(AppComponent, appConfig).then((ref) => {
+  // programa el cierre automático de sesión cuando el JWT caduque
+  const auth = ref.injector.get(AuthService);
+  auth.scheduleAutoLogout();
 });
