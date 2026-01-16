@@ -1,0 +1,76 @@
+<div
+  class="pt-[64px] min-h-[calc(100vh-64px)] flex items-start justify-center bg-gray-100 px-4 py-8"
+>
+  <div
+    class="mx-auto w-full max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl space-y-6"
+  >
+    <div class="bg-white rounded-lg shadow-md p-6 space-y-4">
+      <h1 class="text-3xl font-bold text-center text-gray-800">
+        Consulta Pública
+      </h1>
+
+      <div
+        *ngIf="errorMessage"
+        class="p-3 rounded-md text-sm font-medium text-red-700 bg-red-100 border border-red-300"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <!-- Correo -->
+      <div class="form-control w-full">
+        <input
+          type="email"
+          [(ngModel)]="correo"
+          placeholder="correo@dominio.com o correo@gmail.com"
+          class="input input-bordered w-full"
+          [disabled]="cargando"
+        />
+      </div>
+
+      <!-- Clave -->
+      <div class="form-control w-full">
+        <input
+          type="text"
+          [(ngModel)]="clave"
+          placeholder="Clave pública"
+          class="input input-bordered w-full"
+          [disabled]="cargando"
+        />
+      </div>
+
+      <!-- Plataforma -->
+      <select
+        [(ngModel)]="plataforma"
+        class="select select-bordered w-full"
+        [disabled]="cargando"
+      >
+        <option disabled selected value>Selecciona una plataforma</option>
+        <option value="disney">Disney</option>
+        <option value="netflix">Netflix</option>
+        <option value="prime">Prime</option>
+        <option value="chatgpt">Chatgpt</option>
+        <option value="crunchyroll">Crunchyroll</option>
+      </select>
+
+      <!-- Botón -->
+      <button
+        class="btn btn-neutral w-full"
+        (click)="consultar()"
+        [disabled]="cargando"
+      >
+        Consultar
+        <span
+          *ngIf="cargando"
+          class="loading loading-spinner loading-sm ml-2"
+        ></span>
+      </button>
+
+      <hr />
+
+      <div
+        class="max-h-96 overflow-auto bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200"
+        [innerHTML]="emailHtml"
+      ></div>
+    </div>
+  </div>
+</div>

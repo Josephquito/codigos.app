@@ -4,6 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../guards/auth.service';
+import { environment } from '../../environments/environment';
+import { finalize } from 'rxjs/operators';
+
+type LoginResponse = {
+  access_token: string;
+};
 
 @Component({
   selector: 'app-login',
@@ -14,6 +20,7 @@ import { AuthService } from '../guards/auth.service';
 export class LoginComponent implements OnInit {
   email = '';
   password = '';
+
   errorMessage = '';
   cargando = false;
   expired = false;
@@ -27,7 +34,6 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // ✅ proteger uso de sessionStorage para que solo corra en browser
     if (isPlatformBrowser(this.platformId)) {
       const flag = sessionStorage.getItem('sessionExpired');
       if (flag === '1') {
@@ -37,26 +43,67 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  login() {
+  login(): void {
+    if (this.cargando) return;
+
+    const email = this.email.trim();
+    const password = this.password;
+
+    if (!email || !password) {
+      this.errorMessage = 'Ingresa correo y contraseña';
+      return;
+    }
+
     this.cargando = true;
     this.errorMessage = '';
 
     this.http
-      .post<any>('https://codigos-api.onrender.com/auth/login', {
-        email: this.email,
-        password: this.password,
+      .post<LoginResponse>(`${environment.apiUrl}/auth/login`, {
+        email,
+        password,
       })
+      .pipe(
+        finalize(() => {
+          // 🔥 SE EJECUTA SIEMPRE (éxito o error)
+          this.cargando = false;
+        })
+      )
       .subscribe({
         next: (res) => {
-          this.auth.setToken(res.token, res.role);
-          this.router.navigate(['/correo']);
+          const token = res?.access_token;
+          if (!token) {
+            this.errorMessage = 'El servidor no devolvió access_token';
+            return;
+          }
+
+          this.auth.setToken(token);
+          this.router.navigate(['/correo-privado']);
         },
-        error: () => {
-          this.errorMessage = 'Credenciales incorrectas';
-          this.cargando = false;
-        },
-        complete: () => {
-          this.cargando = false;
+        error: (err) => {
+          // Todos vienen como 401, así que leemos el message del backend
+          if (err?.status === 401) {
+            const msg = err?.error?.message;
+
+            if (typeof msg === 'string') {
+              this.errorMessage = msg;
+            } else if (Array.isArray(msg)) {
+              this.errorMessage = msg.join(', ');
+            } else {
+              this.errorMessage = 'Credenciales incorrectas';
+            }
+
+            return;
+          }
+
+          if (err?.status === 0) {
+            this.errorMessage =
+              'No se pudo conectar al servidor (URL/CORS/backend apagado)';
+            return;
+          }
+
+          this.errorMessage =
+            err?.error?.message ||
+            `Error ${err?.status || ''} al iniciar sesión`;
         },
       });
   }

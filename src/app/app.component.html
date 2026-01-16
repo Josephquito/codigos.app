@@ -37,21 +37,37 @@
         (click)="$event.stopPropagation()"
         role="menu"
       >
-        <li><a routerLink="/correo" role="menuitem">Ver Correo</a></li>
+        <!-- Ver correo -->
+        <li *ngIf="!isLoggedIn; else correoPrivadoMobile">
+          <a routerLink="/correo" role="menuitem">Ver Correo</a>
+        </li>
+        <ng-template #correoPrivadoMobile>
+          <li>
+            <a routerLink="/correo-privado" role="menuitem">Ver Correo</a>
+          </li>
+        </ng-template>
+
         <ng-container *ngIf="isLoggedIn; else loginLink">
           <li>
-            <a routerLink="/registrar" role="menuitem">Registrar Gmail</a>
+            <a routerLink="/registrar" role="menuitem">Gmail</a>
           </li>
           <li>
-            <a routerLink="/imap-registrar" role="menuitem">Registrar IMAP</a>
+            <a routerLink="/imap-registrar" role="menuitem">Dominio</a>
           </li>
           <li><a routerLink="/cuentas" role="menuitem">Mis cuentas</a></li>
+
+          <!-- SOLO ADMIN -->
+          <li *ngIf="isAdmin">
+            <a routerLink="/users" role="menuitem">Usuarios</a>
+          </li>
+
           <li>
             <button (click)="logout()" class="text-red-500" role="menuitem">
               Cerrar sesión
             </button>
           </li>
         </ng-container>
+
         <ng-template #loginLink>
           <li><a routerLink="/login" role="menuitem">Acceder</a></li>
         </ng-template>
@@ -62,11 +78,22 @@
   <!-- Versión escritorio -->
   <div class="flex-none hidden lg:flex">
     <ul class="menu menu-horizontal px-1">
-      <li><a routerLink="/correo">Ver Correo</a></li>
+      <!-- Ver correo -->
+      <li *ngIf="!isLoggedIn; else correoPrivadoDesktop">
+        <a routerLink="/correo">Ver Correo</a>
+      </li>
+      <ng-template #correoPrivadoDesktop>
+        <li><a routerLink="/correo-privado">Ver Correo</a></li>
+      </ng-template>
+
       <ng-container *ngIf="isLoggedIn; else loginBtn">
-        <li><a routerLink="/registrar">Registrar Gmail</a></li>
-        <li><a routerLink="/imap-registrar">Registrar IMAP</a></li>
+        <li><a routerLink="/registrar">Gmail</a></li>
+        <li><a routerLink="/imap-registrar">Dominio</a></li>
         <li><a routerLink="/cuentas">Mis cuentas</a></li>
+
+        <!-- SOLO ADMIN -->
+        <li *ngIf="isAdmin"><a routerLink="/users">Usuarios</a></li>
+
         <li>
           <button
             (click)="logout()"
@@ -76,6 +103,7 @@
           </button>
         </li>
       </ng-container>
+
       <ng-template #loginBtn>
         <li><a routerLink="/login">Acceder</a></li>
       </ng-template>

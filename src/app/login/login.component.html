@@ -8,44 +8,59 @@
       *ngIf="expired"
       class="p-3 rounded-md text-sm font-medium text-red-700 bg-red-100 border border-red-300"
     >
-      ⚠️ Tu sesión ha expirado. Por favor vuelve a iniciar sesión.
+      Tu sesión ha expirado. Por favor vuelve a iniciar sesión.
     </div>
 
-    <h1 class="text-3xl font-bold text-center text-gray-800">
-      Hola! Admin Inicia Sesión
-    </h1>
-
-    <!-- Campo Correo -->
-    <div class="form-control w-full">
-      <input
-        type="email"
-        placeholder="correo@gmail.com"
-        class="input input-bordered w-full"
-        required
-        name="email"
-        [(ngModel)]="email"
-      />
+    <!-- Banner de error (credenciales / servidor / otros) -->
+    <div
+      *ngIf="errorMessage"
+      class="p-3 rounded-md text-sm font-medium text-red-700 bg-red-100 border border-red-300"
+    >
+      {{ errorMessage }}
     </div>
 
-    <!-- Campo Contraseña -->
-    <div class="form-control w-full">
-      <input
-        type="password"
-        placeholder="Contraseña"
-        class="input input-bordered w-full"
-        required
-        name="password"
-        [(ngModel)]="password"
-      />
-    </div>
+    <h1 class="text-3xl font-bold text-center text-gray-800">Iniciar Sesión</h1>
 
-    <!-- Botón -->
-    <button (click)="login()" class="btn btn-neutral w-full">
-      Iniciar Sesión
-      <span
-        *ngIf="cargando"
-        class="loading loading-spinner loading-md ml-2"
-      ></span>
-    </button>
+    <!-- IMPORTANTE: form + ngSubmit evita recargas y soporta Enter -->
+    <form (ngSubmit)="login()" class="space-y-3">
+      <!-- Campo Correo -->
+      <div class="form-control w-full">
+        <input
+          type="email"
+          placeholder="correo@gmail.com"
+          class="input input-bordered w-full"
+          required
+          name="email"
+          [(ngModel)]="email"
+          [disabled]="cargando"
+        />
+      </div>
+
+      <!-- Campo Contraseña -->
+      <div class="form-control w-full">
+        <input
+          type="password"
+          placeholder="Contraseña"
+          class="input input-bordered w-full"
+          required
+          name="password"
+          [(ngModel)]="password"
+          [disabled]="cargando"
+        />
+      </div>
+
+      <!-- Botón -->
+      <button
+        type="submit"
+        class="btn btn-neutral w-full"
+        [disabled]="cargando"
+      >
+        <span *ngIf="!cargando">Iniciar Sesión</span>
+        <span *ngIf="cargando" class="flex items-center gap-2">
+          Iniciando...
+          <span class="loading loading-spinner loading-md"></span>
+        </span>
+      </button>
+    </form>
   </div>
 </div>

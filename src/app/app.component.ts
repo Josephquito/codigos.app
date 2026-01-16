@@ -20,9 +20,13 @@ export class AppComponent {
     return this.auth.isAuthenticated();
   }
 
+  get isAdmin(): boolean {
+    return this.auth.isAdmin();
+  }
+
   logout() {
     this.auth.logout();
-    location.href = '/login';
+    this.router.navigate(['/login']);
   }
 
   // toggle del menú (evita que el click burbujee y cierre)

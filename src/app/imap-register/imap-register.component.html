@@ -1,45 +1,342 @@
-<div
-  class="min-h-[calc(100vh-64px)] flex items-start justify-center bg-gray-100 px-4 py-8"
->
-  <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md space-y-4">
-    <h2 class="text-3xl font-bold text-center text-gray-800">
-      Registrar cuenta IMAP
-    </h2>
+<div class="min-h-[calc(100vh-64px)] bg-gray-100 px-4 py-8">
+  <div class="mx-auto w-full max-w-5xl space-y-4">
+    <!-- Header -->
+    <div
+      class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Registro IMAP</h1>
+        <p class="text-sm text-gray-600">
+          Agrega tus correos de dominio o tu catch-all.
+        </p>
+      </div>
+    </div>
 
-    <form (ngSubmit)="registrarCuenta()" class="space-y-4">
-      <!-- Campo Correo -->
-      <div class="form-control w-full">
+    <!-- Alerts -->
+    <div
+      *ngIf="errorMessage"
+      class="p-3 rounded-md text-sm font-medium text-red-700 bg-red-100 border border-red-300"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <div
+      *ngIf="successMessage"
+      class="p-3 rounded-md text-sm font-medium text-green-700 bg-green-100 border border-green-300"
+    >
+      {{ successMessage }}
+    </div>
+
+    <!-- Form: Crear cuenta -->
+    <div class="bg-white rounded-lg shadow-md p-4 space-y-3">
+      <h2 class="text-lg font-semibold text-gray-800">Agregar cuenta IMAP</h2>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <input
-          id="email"
+          class="input input-bordered w-full"
           type="email"
+          placeholder="correo@dominio.com"
           [(ngModel)]="email"
           name="email"
-          placeholder="correo@dominio.com"
-          class="input input-bordered w-full"
-          required
+          [disabled]="creating"
         />
-      </div>
 
-      <!-- Campo Contraseña -->
-      <div class="form-control w-full">
         <input
-          id="password"
+          class="input input-bordered w-full"
           type="password"
+          placeholder="Contraseña"
           [(ngModel)]="password"
           name="password"
-          placeholder="Contraseña"
+          [disabled]="creating"
+        />
+
+        <input
           class="input input-bordered w-full"
-          required
+          type="text"
+          placeholder="imap.dominio.com"
+          [(ngModel)]="imapHost"
+          name="imapHost"
+          [disabled]="creating"
+        />
+
+        <input
+          class="input input-bordered w-full"
+          type="number"
+          placeholder="Puerto (ej: 993)"
+          [(ngModel)]="imapPort"
+          name="imapPort"
+          [disabled]="creating"
         />
       </div>
 
-      <!-- Botón Registrar -->
-      <button type="submit" class="btn btn-neutral w-full">Registrar</button>
-    </form>
+      <div
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            class="checkbox"
+            [(ngModel)]="useTls"
+            name="useTls"
+            [disabled]="creating"
+          />
+          Usar TLS
+        </label>
 
-    <!-- Mensaje de éxito o error -->
-    <div *ngIf="mensaje" class="mt-4 text-center">
-      <strong [innerHTML]="mensaje"></strong>
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            class="checkbox"
+            [(ngModel)]="isCatchAll"
+            name="isCatchAll"
+            [disabled]="creating"
+          />
+          Marcar como Catch-all
+        </label>
+      </div>
+
+      <button
+        class="btn btn-neutral w-full"
+        (click)="createAccount()"
+        [disabled]="creating"
+      >
+        <span *ngIf="!creating">Guardar</span>
+        <span *ngIf="creating" class="flex items-center gap-2">
+          Guardando...
+          <span class="loading loading-spinner loading-md"></span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="bg-white rounded-lg shadow-md p-4">
+      <div
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <input
+          type="text"
+          class="input input-bordered w-full sm:max-w-md"
+          placeholder="Buscar por email, host o id..."
+          [(ngModel)]="q"
+          [disabled]="loading"
+        />
+
+        <div class="text-sm text-gray-600">
+          Total:
+          <span class="font-semibold">{{ filteredAccounts.length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>IMAP</th>
+
+              <th>Creado</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngIf="loading">
+              <td colspan="6" class="py-10 text-center text-gray-600">
+                <span class="inline-flex items-center gap-2">
+                  <span class="loading loading-spinner loading-md"></span>
+                  Cargando cuentas...
+                </span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!loading && filteredAccounts.length === 0">
+              <td colspan="6" class="py-10 text-center text-gray-600">
+                No hay cuentas que coincidan con la búsqueda.
+              </td>
+            </tr>
+
+            <tr *ngFor="let a of filteredAccounts">
+              <td class="font-mono text-sm">{{ a.id }}</td>
+
+              <td class="break-all">
+                {{ a.email }}
+                <span
+                  *ngIf="a.isCatchAll"
+                  class="ml-2 badge badge-info badge-outline"
+                  title="Cuenta Catch-all"
+                >
+                  Catch-all
+                </span>
+              </td>
+
+              <td class="text-sm">
+                <div class="text-gray-800">{{ a.imapHost }}</div>
+                <div class="text-gray-500">
+                  Puerto: {{ a.imapPort || "-" }} · TLS:
+                  {{ a.useTls ? "Sí" : "No" }}
+                </div>
+              </td>
+
+              <td class="text-sm text-gray-600">
+                {{ a.createdAt | date : "mediumDate" }}
+              </td>
+
+              <td class="text-right">
+                <div class="flex justify-end gap-2">
+                  <!-- Editar -->
+                  <button
+                    class="btn btn-sm btn-outline"
+                    (click)="openEdit(a)"
+                    [disabled]="rowLoading.has(a.id)"
+                    title="Editar"
+                  >
+                    Editar
+                  </button>
+
+                  <!-- Eliminar -->
+                  <button
+                    class="btn btn-sm btn-error"
+                    (click)="askDelete(a)"
+                    [disabled]="rowLoading.has(a.id)"
+                    title="Eliminar"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Editar -->
+    <div class="modal" [class.modal-open]="showEditModal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Editar cuenta IMAP</h3>
+
+        <div class="mt-4 space-y-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <input
+              class="input input-bordered w-full"
+              type="email"
+              placeholder="correo@dominio.com"
+              [(ngModel)]="editForm.email"
+              [disabled]="editing"
+            />
+
+            <input
+              class="input input-bordered w-full"
+              type="password"
+              placeholder="Nueva contraseña (opcional)"
+              [(ngModel)]="editForm.password"
+              [disabled]="editing"
+            />
+
+            <input
+              class="input input-bordered w-full"
+              type="text"
+              placeholder="imap.dominio.com"
+              [(ngModel)]="editForm.imapHost"
+              [disabled]="editing"
+            />
+
+            <input
+              class="input input-bordered w-full"
+              type="number"
+              placeholder="Puerto (ej: 993)"
+              [(ngModel)]="editForm.imapPort"
+              [disabled]="editing"
+            />
+          </div>
+
+          <div
+            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                class="checkbox"
+                [(ngModel)]="editForm.useTls"
+                [disabled]="editing"
+              />
+              Usar TLS
+            </label>
+
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                class="checkbox"
+                [(ngModel)]="editForm.isCatchAll"
+                [disabled]="editing"
+              />
+              Marcar como Catch-all
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-action">
+          <button class="btn" (click)="closeEdit()" [disabled]="editing">
+            Cancelar
+          </button>
+
+          <button
+            class="btn btn-neutral"
+            (click)="saveEdit()"
+            [disabled]="editing"
+          >
+            <span *ngIf="!editing">Guardar cambios</span>
+            <span *ngIf="editing" class="inline-flex items-center gap-2">
+              Guardando...
+              <span class="loading loading-spinner loading-sm"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" (click)="closeEdit()"></div>
+    </div>
+
+    <!-- Modal Confirmar Eliminación -->
+    <div class="modal" [class.modal-open]="showDeleteModal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Confirmar eliminación</h3>
+
+        <p class="mt-2 text-sm text-gray-600">
+          ¿Estás seguro de que deseas eliminar este email:
+          <span class="font-semibold">{{ pendingDelete?.email }}</span
+          >?
+        </p>
+
+        <p class="mt-2 text-xs text-gray-500">
+          Tanto tú como tus clientes no podrán ver los códigos de este email.
+          Deberás volver a conectarlo si deseas usarlo nuevamente.
+        </p>
+
+        <div class="modal-action">
+          <button class="btn" (click)="cancelDelete()" [disabled]="deleting">
+            Cancelar
+          </button>
+
+          <button
+            class="btn btn-error"
+            (click)="confirmDelete()"
+            [disabled]="deleting"
+          >
+            <span *ngIf="!deleting">Aceptar</span>
+            <span *ngIf="deleting" class="inline-flex items-center gap-2">
+              Eliminando...
+              <span class="loading loading-spinner loading-sm"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" (click)="cancelDelete()"></div>
     </div>
   </div>
 </div>
