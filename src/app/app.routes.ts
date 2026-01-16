@@ -8,10 +8,11 @@ import { adminGuard } from './guards/admin.guard';
 import { UsersComponent } from './users/users.component';
 import { EmailPrivateComponent } from './email-private/email-private.component';
 import { EmailPublicComponent } from './email-public/email-public.component';
+import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'correo', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
   { path: 'correo', component: EmailPublicComponent },
 
   // ✅ Rutas protegidas

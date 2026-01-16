@@ -1,5 +1,5 @@
 <div class="min-h-[calc(100vh-64px)] bg-gray-100 px-4 py-8">
-  <div class="mx-auto w-full max-w-6xl space-y-4">
+  <div class="mx-auto w-full max-w-5xl space-y-4">
     <!-- Header -->
     <div
       class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
@@ -136,7 +136,7 @@
 
         <!-- 4) Limpiar -->
         <button
-          class="btn btn-ghost w-full"
+          class="btn w-full"
           (click)="limpiarFiltros()"
           [disabled]="cargando"
           title="Limpiar filtros"
@@ -162,7 +162,6 @@
         <table class="table w-full">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Plataforma</th>
               <th>Correo</th>
               <th>Clave</th>
@@ -190,15 +189,21 @@
             </tr>
 
             <tr *ngFor="let c of cuentas">
-              <td class="font-mono text-sm">{{ c.id }}</td>
-
               <td>
                 <span class="badge badge-outline">{{ c.plataforma }}</span>
               </td>
 
-              <td class="break-all">{{ c.emailAlias }}</td>
+              <td class="whitespace-nowrap">
+                <div class="max-w-[220px] truncate" [title]="c.emailAlias">
+                  {{ c.emailAlias }}
+                </div>
+              </td>
 
-              <td class="break-all">{{ c.clave }}</td>
+              <td class="whitespace-nowrap">
+                <div class="max-w-[160px] truncate" [title]="c.clave">
+                  {{ c.clave }}
+                </div>
+              </td>
 
               <!-- Fechas: DD/MM/AA -->
               <td class="text-sm text-gray-600">
@@ -210,14 +215,19 @@
               </td>
 
               <!-- Días restantes (solo texto, sin badge) -->
-              <td class="text-sm font-semibold">
+              <td class="text-sm font-semibold whitespace-nowrap">
                 <ng-container [ngSwitch]="diasRestantes(c.passwordChangeAt)">
                   <!-- vencida -->
-                  <span *ngSwitchCase="-1" class="text-red-600">Vencida</span>
+                  <span
+                    *ngSwitchCase="-1"
+                    class="text-red-600 whitespace-nowrap"
+                    >Vencida</span
+                  >
 
-                  <!-- si diasRestantes < 0 pero no exactamente -1 -->
+                  <!-- resto -->
                   <span
                     *ngSwitchDefault
+                    class="whitespace-nowrap"
                     [ngClass]="
                       diasRestantes(c.passwordChangeAt) < 0
                         ? 'text-red-600'

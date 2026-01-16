@@ -12,6 +12,7 @@ import { environment } from '../../environments/environment';
 
 type UserRole = 'ADMIN' | 'USER' | string;
 type CreateUserRole = 'ADMIN' | 'USER';
+type EditUserRole = 'ADMIN' | 'USER';
 
 export interface User {
   id: number;
@@ -20,6 +21,7 @@ export interface User {
   role: UserRole;
   isActive: boolean;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 interface CreateUserForm {
@@ -27,6 +29,14 @@ interface CreateUserForm {
   email: string;
   password: string;
   role: CreateUserRole;
+}
+
+interface EditUserForm {
+  name: string;
+  email: string;
+  role: EditUserRole;
+  isActive: boolean;
+  password?: string; // opcional
 }
 
 @Component({
@@ -48,7 +58,7 @@ export class UsersComponent implements OnInit {
 
   private myUserId: number | null = null;
 
-  // ✅ Crear usuario (modal + form)
+  // ✅ Crear usuario
   showCreateModal = false;
   creating = false;
 
@@ -57,6 +67,19 @@ export class UsersComponent implements OnInit {
     email: '',
     password: '',
     role: 'USER',
+  };
+
+  // ✅ Editar usuario
+  showEditModal = false;
+  editing = false;
+  editUserId: number | null = null;
+
+  editForm: EditUserForm = {
+    name: '',
+    email: '',
+    role: 'USER',
+    isActive: true,
+    password: '',
   };
 
   constructor(private http: HttpClient, private auth: AuthService) {}
@@ -93,7 +116,9 @@ export class UsersComponent implements OnInit {
       });
   }
 
-  // ✅ Abrir/Cerrar modal crear
+  // ============================
+  // ✅ Crear usuario (modal)
+  // ============================
   openCreate(): void {
     this.errorMessage = '';
     this.successMessage = '';
@@ -106,7 +131,6 @@ export class UsersComponent implements OnInit {
     this.showCreateModal = false;
   }
 
-  // ✅ Crear usuario (POST /users)
   createUser(): void {
     if (this.creating) return;
 
@@ -144,8 +168,6 @@ export class UsersComponent implements OnInit {
         next: (newUser) => {
           this.successMessage = `Usuario creado: ${newUser.email}`;
           this.showCreateModal = false;
-
-          // Refresca lista para asegurar consistencia
           this.fetchUsers();
         },
         error: (err) => {
@@ -157,8 +179,10 @@ export class UsersComponent implements OnInit {
       });
   }
 
+  // ============================
+  // ✅ Activar / Desactivar
+  // ============================
   toggleActive(u: User): void {
-    // No permitir acción sobre ti mismo desde la UI
     if (this.isMe(u)) {
       this.errorMessage = 'No puedes desactivarte a ti mismo.';
       return;
@@ -198,8 +222,103 @@ export class UsersComponent implements OnInit {
       });
   }
 
+  // ============================
+  // ✅ Editar usuario (modal)
+  // ============================
+  openEdit(u: User): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.showEditModal = true;
+
+    this.editUserId = u.id;
+    this.editForm = {
+      name: (u.name || '').trim(),
+      email: (u.email || '').trim(),
+      role: u.role === 'ADMIN' ? 'ADMIN' : 'USER',
+      isActive: !!u.isActive,
+      password: '',
+    };
+  }
+
+  closeEdit(): void {
+    if (this.editing) return;
+    this.showEditModal = false;
+    this.editUserId = null;
+  }
+
+  saveEdit(): void {
+    if (this.editing) return;
+    if (this.editUserId === null) return;
+
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const id = this.editUserId;
+
+    const name = this.editForm.name.trim();
+    const email = this.editForm.email.trim().toLowerCase();
+    const role = this.editForm.role;
+    const isActive = this.editForm.isActive;
+    const password = (this.editForm.password || '').trim();
+
+    if (!name) {
+      this.errorMessage = 'Nombre inválido.';
+      return;
+    }
+    if (!email) {
+      this.errorMessage = 'Email inválido.';
+      return;
+    }
+
+    // No permitir auto-desactivación (mejor UX, el back también lo bloquea)
+    if (this.isMeId(id) && isActive === false) {
+      this.errorMessage = 'No puedes desactivarte a ti mismo.';
+      return;
+    }
+
+    if (password && password.length < 6) {
+      this.errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+      return;
+    }
+
+    const payload: any = { name, email, role, isActive };
+    if (password) payload.password = password;
+
+    this.editing = true;
+
+    this.http
+      .patch<User>(`${environment.apiUrl}/users/${id}`, payload, {
+        headers: this.authHeaders(),
+      })
+      .subscribe({
+        next: (updated) => {
+          this.successMessage = `Usuario actualizado: ${updated.email}`;
+          this.showEditModal = false;
+
+          // Update local list sin refetch
+          const idx = this.users.findIndex((x) => x.id === id);
+          if (idx >= 0) this.users[idx] = { ...this.users[idx], ...updated };
+
+          this.editUserId = null;
+        },
+        error: (err) => {
+          this.handleHttpError(err, 'al editar usuario');
+        },
+        complete: () => {
+          this.editing = false;
+        },
+      });
+  }
+
+  // ============================
+  // ✅ Utils UI
+  // ============================
   isMe(u: User): boolean {
     return this.myUserId !== null && u.id === this.myUserId;
+  }
+
+  isMeId(id: number | null): boolean {
+    return id !== null && this.myUserId !== null && id === this.myUserId;
   }
 
   get filteredUsers(): User[] {
@@ -256,7 +375,6 @@ export class UsersComponent implements OnInit {
 
       const payload = JSON.parse(atob(padded)) as { sub?: unknown };
 
-      // sub puede venir number o string
       if (typeof payload.sub === 'number') return payload.sub;
       if (typeof payload.sub === 'string' && /^\d+$/.test(payload.sub)) {
         return Number(payload.sub);

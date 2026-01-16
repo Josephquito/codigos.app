@@ -1,19 +1,73 @@
-<!-- Navbar -->
-<div class="navbar bg-base-100 shadow-sm">
-  <div class="flex-1">
-    <a routerLink="/" class="btn btn-ghost text-xl">JOTAVIX</a>
-  </div>
+<!-- NAV WRAP (hide/show on scroll) -->
+<header
+  class="nav-wrap"
+  [class.nav-wrap--visible]="navVisible"
+  [class.nav-wrap--hidden]="!navVisible"
+>
+  <div class="navbar bg-base-100 shadow-sm px-4">
+    <div class="flex-1">
+      <a routerLink="/" class="btn btn-ghost text-xl">JOTAVIX</a>
+    </div>
 
-  <!-- Versión móvil -->
-  <div class="flex-none lg:hidden" (click)="$event.stopPropagation()">
-    <div class="dropdown dropdown-end" [class.dropdown-open]="isMenuOpen">
-      <!-- Trigger -->
+    <!-- DESKTOP -->
+    <div class="hidden lg:flex items-center gap-3">
+      <!-- Ver correo -->
+      <a
+        *ngIf="!isLoggedIn; else correoPrivadoDesktop"
+        routerLink="/correo"
+        class="menu-link"
+        routerLinkActive="active"
+        >Ver Correo</a
+      >
+      <ng-template #correoPrivadoDesktop>
+        <a
+          routerLink="/correo-privado"
+          class="menu-link"
+          routerLinkActive="active"
+          >Ver Correo</a
+        >
+      </ng-template>
+
+      <ng-container *ngIf="isLoggedIn; else loginBtnDesktop">
+        <a routerLink="/registrar" class="menu-link" routerLinkActive="active"
+          >Gmail</a
+        >
+        <a
+          routerLink="/imap-registrar"
+          class="menu-link"
+          routerLinkActive="active"
+          >Dominio</a
+        >
+        <a routerLink="/cuentas" class="menu-link" routerLinkActive="active"
+          >Mis cuentas</a
+        >
+
+        <a
+          *ngIf="isAdmin"
+          routerLink="/users"
+          class="menu-link"
+          routerLinkActive="active"
+          >Usuarios</a
+        >
+
+        <a (click)="logout()" class="menu-logout">Cerrar sesión</a>
+      </ng-container>
+
+      <ng-template #loginBtnDesktop>
+        <a routerLink="/login" class="menu-link" routerLinkActive="active"
+          >Acceder</a
+        >
+      </ng-template>
+    </div>
+
+    <!-- MOBILE: hamburger -->
+    <div class="lg:hidden">
       <button
         type="button"
-        class="btn btn-ghost btn-circle"
+        class="btn btn-ghost btn-circle hamburger"
         aria-label="Abrir menú"
-        [attr.aria-expanded]="isMenuOpen ? 'true' : 'false'"
-        (click)="toggleMenu($event)"
+        [attr.aria-expanded]="mobileOpen ? 'true' : 'false'"
+        (click)="toggleMobileMenu($event)"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -30,86 +84,69 @@
           />
         </svg>
       </button>
-
-      <!-- Menú -->
-      <ul
-        class="menu menu-sm dropdown-content mt-3 z-[9999] p-2 shadow bg-base-100 rounded-box w-52"
-        (click)="$event.stopPropagation()"
-        role="menu"
-      >
-        <!-- Ver correo -->
-        <li *ngIf="!isLoggedIn; else correoPrivadoMobile">
-          <a routerLink="/correo" role="menuitem">Ver Correo</a>
-        </li>
-        <ng-template #correoPrivadoMobile>
-          <li>
-            <a routerLink="/correo-privado" role="menuitem">Ver Correo</a>
-          </li>
-        </ng-template>
-
-        <ng-container *ngIf="isLoggedIn; else loginLink">
-          <li>
-            <a routerLink="/registrar" role="menuitem">Gmail</a>
-          </li>
-          <li>
-            <a routerLink="/imap-registrar" role="menuitem">Dominio</a>
-          </li>
-          <li><a routerLink="/cuentas" role="menuitem">Mis cuentas</a></li>
-
-          <!-- SOLO ADMIN -->
-          <li *ngIf="isAdmin">
-            <a routerLink="/users" role="menuitem">Usuarios</a>
-          </li>
-
-          <li>
-            <button (click)="logout()" class="text-red-500" role="menuitem">
-              Cerrar sesión
-            </button>
-          </li>
-        </ng-container>
-
-        <ng-template #loginLink>
-          <li><a routerLink="/login" role="menuitem">Acceder</a></li>
-        </ng-template>
-      </ul>
     </div>
   </div>
+</header>
 
-  <!-- Versión escritorio -->
-  <div class="flex-none hidden lg:flex">
-    <ul class="menu menu-horizontal px-1">
-      <!-- Ver correo -->
-      <li *ngIf="!isLoggedIn; else correoPrivadoDesktop">
-        <a routerLink="/correo">Ver Correo</a>
-      </li>
-      <ng-template #correoPrivadoDesktop>
-        <li><a routerLink="/correo-privado">Ver Correo</a></li>
-      </ng-template>
+<!-- OVERLAY -->
+<div
+  class="mobile-overlay"
+  [class.open]="mobileOpen"
+  (click)="closeMobileMenu()"
+></div>
 
-      <ng-container *ngIf="isLoggedIn; else loginBtn">
-        <li><a routerLink="/registrar">Gmail</a></li>
-        <li><a routerLink="/imap-registrar">Dominio</a></li>
-        <li><a routerLink="/cuentas">Mis cuentas</a></li>
+<!-- MOBILE PANEL -->
+<nav #mobileMenu class="mobile-panel" [class.open]="mobileOpen">
+  <!-- Ver correo -->
+  <a
+    *ngIf="!isLoggedIn; else correoPrivadoMobile"
+    class="mobile-link"
+    routerLink="/correo"
+    (click)="closeMobileMenu()"
+    >Ver Correo</a
+  >
+  <ng-template #correoPrivadoMobile>
+    <a
+      class="mobile-link"
+      routerLink="/correo-privado"
+      (click)="closeMobileMenu()"
+      >Ver Correo</a
+    >
+  </ng-template>
 
-        <!-- SOLO ADMIN -->
-        <li *ngIf="isAdmin"><a routerLink="/users">Usuarios</a></li>
+  <ng-container *ngIf="isLoggedIn; else loginLinkMobile">
+    <a class="mobile-link" routerLink="/registrar" (click)="closeMobileMenu()"
+      >Gmail</a
+    >
+    <a
+      class="mobile-link"
+      routerLink="/imap-registrar"
+      (click)="closeMobileMenu()"
+      >Dominio</a
+    >
+    <a class="mobile-link" routerLink="/cuentas" (click)="closeMobileMenu()"
+      >Mis cuentas</a
+    >
 
-        <li>
-          <button
-            (click)="logout()"
-            class="btn btn-error btn-sm text-white ml-2"
-          >
-            Cerrar sesión
-          </button>
-        </li>
-      </ng-container>
+    <a
+      *ngIf="isAdmin"
+      class="mobile-link"
+      routerLink="/users"
+      (click)="closeMobileMenu()"
+      >Usuarios</a
+    >
 
-      <ng-template #loginBtn>
-        <li><a routerLink="/login">Acceder</a></li>
-      </ng-template>
-    </ul>
-  </div>
-</div>
+    <button class="mobile-link mobile-logout" (click)="logout()">
+      Cerrar sesión
+    </button>
+  </ng-container>
 
-<!-- Aquí irá tu contenido -->
+  <ng-template #loginLinkMobile>
+    <a class="mobile-link" routerLink="/login" (click)="closeMobileMenu()"
+      >Acceder</a
+    >
+  </ng-template>
+</nav>
+
+<!-- CONTENIDO -->
 <router-outlet></router-outlet>

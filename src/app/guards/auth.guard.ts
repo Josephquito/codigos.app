@@ -7,9 +7,6 @@ export const authGuard: CanActivateFn = (route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  // Permitir login sin bloquear
-  if (state.url.startsWith('/login')) return true;
-
   if (!auth.isAuthenticated()) {
     auth.forceSessionExpired();
     return false;

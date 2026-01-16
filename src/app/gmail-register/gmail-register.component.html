@@ -80,9 +80,9 @@
         <table class="table w-full">
           <thead>
             <tr>
-              <th>Email</th>
-              <th>Registrado</th>
-              <th class="text-right">Acciones</th>
+              <th class="px-3 whitespace-nowrap">Email</th>
+              <th class="px-3 whitespace-nowrap">Registrado</th>
+              <th class="px-3 text-right whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
 
@@ -102,15 +102,22 @@
               </td>
             </tr>
 
-            <tr *ngFor="let a of filteredAccounts">
-              <td class="break-all">{{ a.email }}</td>
+            <tr *ngFor="let a of filteredAccounts" class="text-sm">
+              <!-- Email (sin salto) -->
+              <td class="px-3 whitespace-nowrap">
+                <div class="max-w-[420px] truncate" [title]="a.email">
+                  {{ a.email }}
+                </div>
+              </td>
 
-              <td class="text-sm text-gray-600">
+              <!-- Registrado -->
+              <td class="px-3 text-gray-600 whitespace-nowrap">
                 {{ a.createdAt | date : "shortDate" }}
               </td>
 
-              <td class="text-right">
-                <div class="flex justify-end gap-2">
+              <!-- Acciones -->
+              <td class="px-3 text-right whitespace-nowrap">
+                <div class="flex justify-end gap-2 flex-nowrap">
                   <button
                     class="btn btn-sm btn-error"
                     (click)="askDelete(a)"

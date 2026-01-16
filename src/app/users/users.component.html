@@ -8,7 +8,8 @@
       <div>
         <h1 class="text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
         <p class="text-sm text-gray-600">
-          Activa o desactiva usuarios para controlar el acceso.
+          Activa o desactiva usuarios y edita sus datos para controlar el
+          acceso.
         </p>
       </div>
 
@@ -61,11 +62,8 @@
         <table class="table w-full">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Nombre</th>
               <th>Email</th>
-              <th>Rol</th>
-              <th>Estado</th>
               <th class="text-right">Acción</th>
             </tr>
           </thead>
@@ -87,55 +85,44 @@
             </tr>
 
             <tr *ngFor="let u of filteredUsers">
-              <td class="font-mono text-sm">
-                {{ u.id }}
-                <span
-                  *ngIf="isMe(u)"
-                  class="ml-2 badge badge-info badge-outline"
-                >
-                  Tú
-                </span>
-              </td>
-
               <td class="break-words">
                 {{ u.name || "-" }}
               </td>
 
               <td class="break-all">{{ u.email }}</td>
 
-              <td>
-                <span class="badge badge-outline">{{ u.role }}</span>
-              </td>
-
-              <td>
-                <span
-                  class="badge"
-                  [ngClass]="u.isActive ? 'badge-success' : 'badge-ghost'"
-                >
-                  {{ u.isActive ? "Activo" : "Inactivo" }}
-                </span>
-              </td>
-
               <td class="text-right">
-                <button
-                  class="btn btn-sm"
-                  [ngClass]="u.isActive ? 'btn-warning' : 'btn-success'"
-                  (click)="toggleActive(u)"
-                  [disabled]="rowLoading.has(u.id) || isMe(u)"
-                  [title]="isMe(u) ? 'No puedes desactivarte a ti mismo' : ''"
-                >
-                  <span *ngIf="!rowLoading.has(u.id)">
-                    {{ u.isActive ? "Desactivar" : "Activar" }}
-                  </span>
-
-                  <span
-                    *ngIf="rowLoading.has(u.id)"
-                    class="flex items-center gap-2"
+                <div class="inline-flex gap-2">
+                  <!-- Editar -->
+                  <button
+                    class="btn btn-sm btn-outline"
+                    (click)="openEdit(u)"
+                    [disabled]="rowLoading.has(u.id) || loading"
                   >
-                    Procesando...
-                    <span class="loading loading-spinner loading-sm"></span>
-                  </span>
-                </button>
+                    Editar
+                  </button>
+
+                  <!-- Activar / Desactivar -->
+                  <button
+                    class="btn btn-sm"
+                    [ngClass]="u.isActive ? 'btn-warning' : 'btn-success'"
+                    (click)="toggleActive(u)"
+                    [disabled]="rowLoading.has(u.id) || isMe(u)"
+                    [title]="isMe(u) ? 'No puedes desactivarte a ti mismo' : ''"
+                  >
+                    <span *ngIf="!rowLoading.has(u.id)">
+                      {{ u.isActive ? "Desactivar" : "Activar" }}
+                    </span>
+
+                    <span
+                      *ngIf="rowLoading.has(u.id)"
+                      class="flex items-center gap-2"
+                    >
+                      Procesando...
+                      <span class="loading loading-spinner loading-sm"></span>
+                    </span>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -222,8 +209,110 @@
         </div>
       </div>
 
-      <!-- Backdrop click -->
       <div class="modal-backdrop" (click)="closeCreate()"></div>
+    </div>
+
+    <!-- Modal Editar Usuario -->
+    <div class="modal" [class.modal-open]="showEditModal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Editar usuario</h3>
+
+        <div class="mt-4 space-y-3">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Nombre</span>
+            </label>
+            <input
+              type="text"
+              class="input input-bordered w-full"
+              [(ngModel)]="editForm.name"
+              [disabled]="editing"
+              placeholder="Ej: Juan Pérez"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Email</span>
+            </label>
+            <input
+              type="email"
+              class="input input-bordered w-full"
+              [(ngModel)]="editForm.email"
+              [disabled]="editing"
+              placeholder="correo@dominio.com"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Rol</span>
+            </label>
+            <select
+              class="select select-bordered w-full"
+              [(ngModel)]="editForm.role"
+              [disabled]="editing"
+            >
+              <option value="USER">USER</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label cursor-pointer">
+              <span class="label-text">Activo</span>
+              <input
+                type="checkbox"
+                class="toggle toggle-success"
+                [(ngModel)]="editForm.isActive"
+                [disabled]="
+                  editing || (isMeId(editUserId) && editForm.isActive === false)
+                "
+                [title]="
+                  isMeId(editUserId) && editForm.isActive === false
+                    ? 'No puedes desactivarte a ti mismo'
+                    : ''
+                "
+              />
+            </label>
+          </div>
+
+          <div class="divider my-2">Cambiar contraseña (opcional)</div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Nueva contraseña</span>
+            </label>
+            <input
+              type="password"
+              class="input input-bordered w-full"
+              [(ngModel)]="editForm.password"
+              [disabled]="editing"
+              placeholder="Deja vacío para no cambiar"
+            />
+          </div>
+        </div>
+
+        <div class="modal-action">
+          <button class="btn" (click)="closeEdit()" [disabled]="editing">
+            Cancelar
+          </button>
+
+          <button
+            class="btn btn-primary"
+            (click)="saveEdit()"
+            [disabled]="editing"
+          >
+            <span *ngIf="!editing">Guardar</span>
+            <span *ngIf="editing" class="inline-flex items-center gap-2">
+              Guardando...
+              <span class="loading loading-spinner loading-sm"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" (click)="closeEdit()"></div>
     </div>
   </div>
 </div>

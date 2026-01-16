@@ -1,0 +1,114 @@
+/* wrapper fijo arriba */
+.nav-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3000;
+  transform: translateY(0);
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.nav-wrap--hidden {
+  transform: translateY(-100%);
+}
+
+.nav-wrap--visible {
+  transform: translateY(0);
+}
+
+/* para que el contenido no quede debajo del navbar (ajusta si cambia la altura) */
+:host {
+  display: block;
+  padding-top: 64px;
+}
+
+/* links desktop tipo “app” */
+.menu-link {
+  font-size: 16px;
+  font-weight: 350;
+  text-decoration: none;
+  color: #1f2937;
+  padding: 4px 6px;
+  border-radius: 10px;
+}
+
+.menu-link.active {
+  font-weight: 600;
+}
+
+/* botón hamburguesa sin fondo raro */
+.hamburger:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* overlay */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2980;
+  background: rgba(17, 24, 39, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.mobile-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* panel móvil full-width */
+.mobile-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 64px; /* igual al padding-top del contenido */
+  z-index: 2990;
+  background: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-120%);
+  transition: transform 0.25s ease;
+  max-height: calc(100vh - 64px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-panel.open {
+  transform: translateY(0);
+}
+
+.mobile-link {
+  display: block;
+  padding: 14px 18px;
+  color: #1f2937;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 450;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  border: 0;
+}
+
+.mobile-link:hover {
+  background: rgba(31, 41, 55, 0.06);
+}
+
+/* Botón cerrar sesión – mobile */
+.mobile-logout {
+  color: #b91c1c; /* rojo serio */
+}
+
+.mobile-logout:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.menu-logout {
+  color: #b91c1c; /* rojo serio */
+  cursor: pointer;
+  font-weight: 600;
+}

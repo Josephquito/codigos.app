@@ -128,24 +128,22 @@
       </div>
     </div>
 
-    <!-- Table -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
       <div class="overflow-x-auto">
         <table class="table w-full">
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>Email</th>
-              <th>IMAP</th>
-
-              <th>Creado</th>
-              <th class="text-right">Acciones</th>
+            <tr class="text-sm">
+              <th class="px-3 whitespace-nowrap">ID</th>
+              <th class="px-3 whitespace-nowrap">Email</th>
+              <th class="px-3">IMAP</th>
+              <th class="px-3 whitespace-nowrap">Creado</th>
+              <th class="px-3 text-right whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
 
           <tbody>
             <tr *ngIf="loading">
-              <td colspan="6" class="py-10 text-center text-gray-600">
+              <td colspan="5" class="py-8 text-center text-gray-600">
                 <span class="inline-flex items-center gap-2">
                   <span class="loading loading-spinner loading-md"></span>
                   Cargando cuentas...
@@ -154,55 +152,56 @@
             </tr>
 
             <tr *ngIf="!loading && filteredAccounts.length === 0">
-              <td colspan="6" class="py-10 text-center text-gray-600">
+              <td colspan="5" class="py-8 text-center text-gray-600">
                 No hay cuentas que coincidan con la búsqueda.
               </td>
             </tr>
 
-            <tr *ngFor="let a of filteredAccounts">
-              <td class="font-mono text-sm">{{ a.id }}</td>
+            <tr *ngFor="let a of filteredAccounts" class="text-sm">
+              <td class="font-mono whitespace-nowrap px-3">{{ a.id }}</td>
 
-              <td class="break-all">
-                {{ a.email }}
-                <span
-                  *ngIf="a.isCatchAll"
-                  class="ml-2 badge badge-info badge-outline"
-                  title="Cuenta Catch-all"
-                >
-                  Catch-all
-                </span>
+              <td class="whitespace-nowrap px-3">
+                <div class="flex items-center gap-2 max-w-[280px]">
+                  <span class="truncate" [title]="a.email">{{ a.email }}</span>
+                  <span
+                    *ngIf="a.isCatchAll"
+                    class="badge badge-info badge-outline shrink-0 text-xs"
+                    title="Cuenta Catch-all"
+                  >
+                    Catch-all
+                  </span>
+                </div>
               </td>
 
-              <td class="text-sm">
-                <div class="text-gray-800">{{ a.imapHost }}</div>
-                <div class="text-gray-500">
+              <td class="px-3">
+                <div
+                  class="text-gray-800 whitespace-nowrap truncate max-w-[360px]"
+                >
+                  {{ a.imapHost }}
+                </div>
+                <div class="text-gray-500 whitespace-nowrap text-xs">
                   Puerto: {{ a.imapPort || "-" }} · TLS:
                   {{ a.useTls ? "Sí" : "No" }}
                 </div>
               </td>
 
-              <td class="text-sm text-gray-600">
+              <td class="text-gray-600 whitespace-nowrap px-3">
                 {{ a.createdAt | date : "mediumDate" }}
               </td>
 
-              <td class="text-right">
-                <div class="flex justify-end gap-2">
-                  <!-- Editar -->
+              <td class="text-right whitespace-nowrap px-3">
+                <div class="flex justify-end gap-1 flex-nowrap">
                   <button
-                    class="btn btn-sm btn-outline"
+                    class="btn btn-xs btn-outline"
                     (click)="openEdit(a)"
                     [disabled]="rowLoading.has(a.id)"
-                    title="Editar"
                   >
                     Editar
                   </button>
-
-                  <!-- Eliminar -->
                   <button
-                    class="btn btn-sm btn-error"
+                    class="btn btn-xs btn-error"
                     (click)="askDelete(a)"
                     [disabled]="rowLoading.has(a.id)"
-                    title="Eliminar"
                   >
                     Eliminar
                   </button>
