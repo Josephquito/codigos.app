@@ -12,7 +12,8 @@ import {
   RouterLinkActive,
 } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from './guards/auth.service';
+import { AuthService } from './services/auth.service';
+import { CompanyContextService } from './services/company-context.service';
 
 @Component({
   selector: 'app-root',
@@ -24,9 +25,13 @@ import { AuthService } from './guards/auth.service';
 export class AppComponent {
   private router = inject(Router);
   auth = inject(AuthService);
+  companyCtx = inject(CompanyContextService);
 
   // mobile panel
   mobileOpen = false;
+
+  // submenu desktop
+  userMenuOpen = false;
 
   // hide/show navbar
   navVisible = true;
@@ -34,39 +39,92 @@ export class AppComponent {
   private readonly showThreshold = 10;
   private readonly hideAfter = 80;
 
-  @ViewChild('mobileMenu') mobileMenu!: ElementRef<HTMLElement>;
+  @ViewChild('mobileMenu') mobileMenu?: ElementRef<HTMLElement>;
 
+  // ✅ sesión válida = token no expirado
   get isLoggedIn(): boolean {
     return this.auth.isAuthenticated();
   }
 
-  get isAdmin(): boolean {
-    return this.auth.isAdmin();
+  // ✅ nombre si hay, si no email, si no marca
+  get displayName(): string {
+    if (!this.isLoggedIn) return 'JOTAVIX';
+    const me = this.auth.me();
+    return me?.nombre || me?.email || 'JOTAVIX';
+  }
+
+  // ✅ company activa
+  get hasCompany(): boolean {
+    return this.companyCtx.hasCompany();
+  }
+
+  get activeCompanyName(): string {
+    return this.companyCtx.companyName() || '';
+  }
+
+  // --- acciones ---
+  changeCompany() {
+    this.companyCtx.setActiveCompany(null);
+    this.router.navigate(['/companies']);
+    this.closeMobileMenu();
   }
 
   logout() {
+    this.companyCtx.setActiveCompany(null);
     this.auth.logout();
     this.router.navigate(['/login']);
     this.closeMobileMenu();
   }
 
+  // --- mobile ---
   toggleMobileMenu(event: Event) {
     event.stopPropagation();
     this.mobileOpen = !this.mobileOpen;
     if (this.mobileOpen) this.navVisible = true;
+
+    // si abres mobile, cierra el submenu desktop
+    if (this.mobileOpen) this.closeUserMenu();
   }
 
   closeMobileMenu() {
     this.mobileOpen = false;
   }
 
-  // click fuera => cerrar panel
+  // --- submenu desktop ---
+  toggleUserMenu(event: Event) {
+    event.stopPropagation();
+    this.userMenuOpen = !this.userMenuOpen;
+
+    // si abres submenu, cierra mobile
+    if (this.userMenuOpen) this.closeMobileMenu();
+  }
+
+  closeUserMenu() {
+    this.userMenuOpen = false;
+  }
+
+  changeCompanyFromMenu() {
+    this.closeUserMenu();
+    this.changeCompany();
+  }
+
+  logoutFromMenu() {
+    this.closeUserMenu();
+    this.logout();
+  }
+
+  // click fuera => cerrar submenu + panel
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent) {
+    // cerrar dropdown desktop
+    if (this.userMenuOpen) this.closeUserMenu();
+
+    // cerrar panel mobile
     if (!this.mobileOpen) return;
 
     const target = event.target as HTMLElement;
-    const clickedInside = this.mobileMenu?.nativeElement.contains(target);
+    const clickedInside =
+      this.mobileMenu?.nativeElement.contains(target) ?? false;
     const clickedHamburger = target.closest('.hamburger');
 
     if (!clickedInside && !clickedHamburger) this.closeMobileMenu();
@@ -75,6 +133,7 @@ export class AppComponent {
   // cerrar con ESC
   @HostListener('document:keydown.escape')
   onEsc() {
+    if (this.userMenuOpen) this.closeUserMenu();
     if (this.mobileOpen) this.closeMobileMenu();
   }
 
@@ -82,6 +141,7 @@ export class AppComponent {
   constructor() {
     this.router.events.subscribe(() => {
       if (this.mobileOpen) this.closeMobileMenu();
+      if (this.userMenuOpen) this.closeUserMenu();
     });
   }
 

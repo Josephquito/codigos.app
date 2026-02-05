@@ -1,23 +1,20 @@
-// src/app/interceptors/auth.interceptor.ts
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../guards/auth.service';
+import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const token = auth.getToken();
 
-  const authReq = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
+  // si no hay token, pasa normal
+  if (!token) return next(req);
 
-  return next(authReq).pipe({
-    error: (err: unknown) => {
-      if (err instanceof HttpErrorResponse && err.status === 401) {
-        // cualquier 401 → tratamos como sesión expirada/inválida
-        auth.forceSessionExpired();
-      }
-      throw err;
-    },
-  } as any);
+  // no metas auth header al login (opcional, pero limpio)
+  if (req.url.includes('/auth/login')) return next(req);
+
+  const authReq = req.clone({
+    setHeaders: { Authorization: `Bearer ${token}` },
+  });
+
+  return next(authReq);
 };

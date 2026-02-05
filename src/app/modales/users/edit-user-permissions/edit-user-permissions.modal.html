@@ -1,0 +1,114 @@
+<!-- Backdrop -->
+<div *ngIf="open" class="fixed inset-0 z-[99990]">
+  <div class="absolute inset-0 bg-black/40" (click)="onClose()"></div>
+
+  <!-- Dialog -->
+  <div class="absolute inset-0 flex items-center justify-center p-4">
+    <div
+      class="w-full max-w-3xl bg-base-100 rounded-box shadow-xl border border-base-200 relative"
+    >
+      <div
+        class="p-4 border-b border-base-200 flex items-start justify-between gap-3"
+      >
+        <div>
+          <h3 class="text-lg font-semibold">Permisos de usuario</h3>
+          <p class="text-sm text-base-content/70">{{ user?.email }}</p>
+        </div>
+
+        <button class="btn btn-ghost btn-sm" (click)="onClose()">✕</button>
+      </div>
+
+      <div class="p-4">
+        <!-- Error -->
+        <div *ngIf="errorMessage" class="alert alert-error mb-3">
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="flex items-center gap-2 py-6">
+          <span class="loading loading-spinner loading-md"></span>
+          <span>Cargando permisos...</span>
+        </div>
+
+        <div *ngIf="!loading">
+          <!-- Search -->
+          <div class="flex items-center gap-2 mb-3">
+            <input
+              class="input input-bordered w-full"
+              placeholder="Buscar (label, key, resource, action)..."
+              [(ngModel)]="search"
+              [disabled]="saving"
+            />
+          </div>
+
+          <!-- List -->
+          <div
+            class="max-h-[60vh] overflow-auto border border-base-200 rounded-box"
+          >
+            <div
+              *ngFor="let g of grouped"
+              class="p-3 border-b border-base-200 last:border-b-0"
+            >
+              <div class="font-semibold mb-2">{{ g.title }}</div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <label
+                  *ngFor="let p of g.items"
+                  class="flex items-start gap-3 p-2 rounded-btn hover:bg-base-200/60 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-sm mt-1"
+                    [checked]="isChecked(p.id)"
+                    [disabled]="!canUpdate || saving"
+                    (change)="onToggle(p.id, $event)"
+                  />
+
+                  <div class="leading-tight">
+                    <div class="font-medium">
+                      {{ p.label || p.key }}
+                      <span
+                        *ngIf="p.isSystem"
+                        class="badge badge-ghost badge-sm ml-2"
+                        >SYSTEM</span
+                      >
+                    </div>
+                    <div class="text-xs text-base-content/60">
+                      {{ p.key }} · {{ p.resource }}:{{ p.action }}
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div
+              *ngIf="filteredCatalog.length === 0"
+              class="p-6 text-center text-base-content/60"
+            >
+              No hay permisos que coincidan con la búsqueda.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="p-4 border-t border-base-200 flex items-center justify-end gap-2"
+      >
+        <button class="btn btn-ghost" (click)="onClose()" [disabled]="saving">
+          Cancelar
+        </button>
+        <button
+          class="btn btn-primary"
+          (click)="save()"
+          [disabled]="saving || loading || !canUpdate"
+        >
+          <span
+            *ngIf="saving"
+            class="loading loading-spinner loading-sm mr-2"
+          ></span>
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

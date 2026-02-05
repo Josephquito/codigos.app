@@ -1,0 +1,130 @@
+<div class="page">
+  <div class="header">
+    <div>
+      <h1 class="title">Proveedores</h1>
+      <p class="subtitle">Crear, editar y administrar proveedores.</p>
+    </div>
+
+    <button
+      class="btn btn-neutral"
+      (click)="openCreate()"
+      [disabled]="!canCreate"
+      title="Requiere SUPPLIERS:CREATE"
+    >
+      Crear proveedor
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <!-- Loading -->
+      <div *ngIf="loading" class="flex items-center gap-2">
+        <span class="loading loading-spinner loading-md"></span>
+        <span>Cargando proveedores...</span>
+      </div>
+
+      <!-- Tabla -->
+      <div *ngIf="!loading" class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Contacto</th>
+              <th>Creado</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let s of suppliers">
+              <td>
+                <div class="font-medium">{{ s.name }}</div>
+              </td>
+
+              <td>{{ s.contact || '—' }}</td>
+
+              <td class="text-sm text-gray-500">
+                {{ s.createdAt ? (s.createdAt | date : 'medium') : '—' }}
+              </td>
+
+              <td class="text-right">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  (click)="toggleMenu(s, $event)"
+                  [disabled]="loadingRowId === s.id"
+                  aria-label="Acciones"
+                  title="Acciones"
+                >
+                  ⋮
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="suppliers.length === 0">
+              <td colspan="4" class="text-center text-gray-500 py-6">
+                No hay proveedores registrados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MENÚ FLOTANTE FIXED (NO LO RECORTA NADIE) -->
+  <div
+    *ngIf="menuOpen && menuSupplier"
+    class="fixed z-[99999]"
+    [style.left.px]="menuX"
+    [style.top.px]="menuY"
+    style="transform: translateX(-100%)"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="bg-base-100 shadow rounded-box w-44 border border-base-200">
+      <ul class="menu p-2">
+        <li *ngIf="canUpdate">
+          <button type="button" (click)="openEdit(menuSupplier); closeMenu()">
+            Editar
+          </button>
+        </li>
+
+        <li *ngIf="canDelete">
+          <button
+            type="button"
+            class="text-error"
+            (click)="confirmDelete(menuSupplier); closeMenu()"
+          >
+            Eliminar
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Modales -->
+  <app-create-supplier-modal
+    [open]="createOpen"
+    (close)="closeAll()"
+    (created)="onCreated()"
+  ></app-create-supplier-modal>
+
+  <app-edit-supplier-modal
+    [open]="editOpen"
+    [supplier]="selected"
+    (close)="closeAll()"
+    (updated)="onUpdated()"
+  ></app-edit-supplier-modal>
+
+  <app-delete-supplier-modal
+    [open]="deleteOpen"
+    [supplier]="selected"
+    (close)="closeAll()"
+    (deleted)="onDeleted()"
+  ></app-delete-supplier-modal>
+</div>

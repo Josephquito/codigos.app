@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://codigos-api-n2pq.onrender.com',
+  apiUrl: 'http://localhost:3000',
 };

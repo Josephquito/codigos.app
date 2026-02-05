@@ -1,9 +1,5 @@
-<!-- Contenedor principal -->
-<div
-  class="min-h-[calc(100vh-64px)] flex items-start justify-center bg-gray-100 px-4 py-8"
->
+<div class="min-h-screen flex items-start justify-center bg-gray-100 px-4 py-8">
   <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md space-y-4">
-    <!-- Banner de sesión expirada -->
     <div
       *ngIf="expired"
       class="p-3 rounded-md text-sm font-medium text-red-700 bg-red-100 border border-red-300"
@@ -11,7 +7,6 @@
       Tu sesión ha expirado. Por favor vuelve a iniciar sesión.
     </div>
 
-    <!-- Banner de error (credenciales / servidor / otros) -->
     <div
       *ngIf="errorMessage"
       class="p-3 rounded-md text-sm font-medium text-red-700 bg-red-100 border border-red-300"
@@ -21,22 +16,27 @@
 
     <h1 class="text-3xl font-bold text-center text-gray-800">Iniciar Sesión</h1>
 
-    <!-- IMPORTANTE: form + ngSubmit evita recargas y soporta Enter -->
-    <form (ngSubmit)="login()" class="space-y-3">
-      <!-- Campo Correo -->
+    <form
+      (ngSubmit)="login()"
+      class="space-y-3"
+      novalidate
+      [class.opacity-70]="cargando"
+      [attr.aria-busy]="cargando"
+    >
       <div class="form-control w-full">
         <input
           type="email"
           placeholder="correo@gmail.com"
           class="input input-bordered w-full"
           required
+          autofocus
           name="email"
           [(ngModel)]="email"
           [disabled]="cargando"
+          autocomplete="email"
         />
       </div>
 
-      <!-- Campo Contraseña -->
       <div class="form-control w-full">
         <input
           type="password"
@@ -46,10 +46,10 @@
           name="password"
           [(ngModel)]="password"
           [disabled]="cargando"
+          autocomplete="current-password"
         />
       </div>
 
-      <!-- Botón -->
       <button
         type="submit"
         class="btn btn-neutral w-full"

@@ -1,0 +1,154 @@
+<div class="page">
+  <div class="header">
+    <div>
+      <h1 class="title">Usuarios</h1>
+      <p class="subtitle">Crear, editar y administrar usuarios.</p>
+    </div>
+
+    <button
+      class="btn btn-neutral"
+      (click)="openCreate()"
+      [disabled]="!canCreate"
+      title="Requiere USERS:CREATE"
+    >
+      Crear usuario
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <!-- Loading -->
+      <div *ngIf="loading" class="flex items-center gap-2">
+        <span class="loading loading-spinner loading-md"></span>
+        <span>Cargando usuarios...</span>
+      </div>
+
+      <!-- Tabla -->
+      <div *ngIf="!loading" class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Status</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let u of users">
+              <td><div class="font-medium">{{ u.email }}</div></td>
+              <td>{{ u.nombre || '—' }}</td>
+              <td>{{ u.phone || '—' }}</td>
+
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'badge-success': u.status === 'ACTIVE',
+                    'badge-warning': u.status === 'INACTIVE',
+                    'badge-error': u.status === 'BLOCKED'
+                  }"
+                >
+                  {{ u.status }}
+                </span>
+              </td>
+
+              <!-- Botón ⋮ -->
+              <td class="text-right">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  (click)="toggleMenu(u, $event)"
+                  [disabled]="loadingRowId === u.id"
+                  aria-label="Acciones"
+                  title="Acciones"
+                >
+                  ⋮
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="users.length === 0">
+              <td colspan="5" class="text-center text-gray-500 py-6">
+                No hay usuarios registrados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MENÚ FLOTANTE FIXED (NO LO RECORTA NADIE) -->
+  <div
+    *ngIf="menuOpen && menuUser"
+    class="fixed z-[99999]"
+    [style.left.px]="menuX"
+    [style.top.px]="menuY"
+    style="transform: translateX(-100%)"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="bg-base-100 shadow rounded-box w-44 border border-base-200">
+      <ul class="menu p-2">
+        <li *ngIf="canUpdate">
+          <button type="button" (click)="openEdit(menuUser); closeMenu()">
+            Editar
+          </button>
+        </li>
+        <li *ngIf="canUpdate">
+          <button
+            type="button"
+            (click)="openPermissions(menuUser); closeMenu()"
+          >
+            Permisos
+          </button>
+        </li>
+
+        <li *ngIf="canDelete">
+          <button
+            type="button"
+            class="text-error"
+            (click)="confirmDelete(menuUser); closeMenu()"
+          >
+            Eliminar
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Modales -->
+  <app-create-user-modal
+    [open]="createOpen"
+    (close)="closeAll()"
+    (created)="onCreated()"
+  ></app-create-user-modal>
+
+  <app-edit-user-modal
+    [open]="editOpen"
+    [user]="selected"
+    (close)="closeAll()"
+    (updated)="onUpdated()"
+  ></app-edit-user-modal>
+
+  <app-delete-user-modal
+    [open]="deleteOpen"
+    [user]="selected"
+    (close)="closeAll()"
+    (deleted)="onDeleted()"
+  ></app-delete-user-modal>
+
+  <app-edit-user-permissions-modal
+    [open]="permissionsOpen"
+    [user]="selected"
+    (close)="closePermissions()"
+    (updated)="onPermissionsUpdated()"
+  ></app-edit-user-permissions-modal>
+</div>

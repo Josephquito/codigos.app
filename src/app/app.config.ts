@@ -1,12 +1,11 @@
-// src/app/app.config.ts
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
-
-// 👇 agrega estas importaciones
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+
+import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { companyScopeInterceptor } from './interceptors/company-scope.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,7 +13,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(),
 
-    // 👇 registra HttpClient con tu interceptor
-    provideHttpClient(withInterceptors([authInterceptor])),
+    // ✅ HttpClient + interceptors
+    provideHttpClient(
+      withInterceptors([authInterceptor, companyScopeInterceptor]),
+    ),
   ],
 };

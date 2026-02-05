@@ -1,0 +1,13 @@
+/* hace que el dropdown no se “pegue” al input */
+.menu {
+  max-height: 260px;
+  overflow: auto;
+}
+
+/* truncar bonito */
+.truncate {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

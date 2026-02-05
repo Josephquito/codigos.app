@@ -1,0 +1,114 @@
+<dialog class="modal" [class.modal-open]="open">
+  <div class="modal-box max-w-3xl">
+    <h3 class="font-bold text-lg">
+      Miembros de: <span class="font-extrabold">{{ company?.name }}</span>
+    </h3>
+
+    <div *ngIf="errorMessage" class="alert alert-error mt-3">
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Asignar -->
+    <div class="mt-4 grid gap-3">
+      <label class="form-control w-full">
+        <div class="label">
+          <span class="label-text">Asignar EMPLOYEE por IDs</span>
+          <span class="label-text-alt text-gray-500">Ej: 3, 5, 8</span>
+        </div>
+        <input
+          class="input input-bordered w-full"
+          [(ngModel)]="userIdsRaw"
+          placeholder="IDs separados por coma"
+        />
+      </label>
+
+      <div class="flex justify-end gap-2">
+        <button
+          class="btn"
+          type="button"
+          (click)="loadMembers()"
+          [disabled]="loading || saving"
+        >
+          Refrescar
+        </button>
+
+        <button
+          class="btn btn-neutral"
+          type="button"
+          (click)="assign()"
+          [disabled]="saving"
+        >
+          <span
+            *ngIf="saving"
+            class="loading loading-spinner loading-sm"
+          ></span>
+          Asignar
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="mt-4">
+      <div *ngIf="loading" class="flex items-center gap-2">
+        <span class="loading loading-spinner loading-md"></span>
+        <span>Cargando miembros...</span>
+      </div>
+
+      <div *ngIf="!loading" class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Rol</th>
+              <th>Status</th>
+              <th class="text-right">Acción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let m of members">
+              <td>{{ m.user.id }}</td>
+              <td>{{ m.user.nombre || '—' }}</td>
+              <td class="font-medium">{{ m.user.email }}</td>
+              <td>{{ m.user.role }}</td>
+              <td>
+                <span class="badge" [ngClass]="badgeStatusClass(m.status)">
+                  {{ m.status }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm text-error"
+                  (click)="unassign(m)"
+                  [disabled]="saving"
+                  title="Desasignar (pone INACTIVE)"
+                >
+                  Quitar
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="members.length === 0">
+              <td colspan="6" class="text-center text-gray-500 py-6">
+                No hay miembros asignados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-action">
+      <button class="btn" type="button" (click)="onClose()" [disabled]="saving">
+        Cerrar
+      </button>
+    </div>
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button type="button" (click)="onClose()">close</button>
+  </form>
+</dialog>

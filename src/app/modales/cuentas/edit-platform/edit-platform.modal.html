@@ -1,0 +1,37 @@
+<dialog class="modal" [class.modal-open]="open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">Editar plataforma</h3>
+
+    <p class="text-sm opacity-70 mt-1">{{ platform?.name || '—' }}</p>
+
+    <div *ngIf="errorMessage" class="alert alert-error mt-3">
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <div class="mt-4 grid gap-3">
+      <label class="form-control">
+        <div class="label"><span class="label-text">Nombre</span></div>
+        <input class="input input-bordered" [(ngModel)]="name" />
+      </label>
+
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" class="toggle" [(ngModel)]="active" />
+        <span class="label-text">Activa</span>
+      </label>
+    </div>
+
+    <div class="modal-action">
+      <button class="btn" (click)="onClose()" [disabled]="loading">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="submit()" [disabled]="loading">
+        <span *ngIf="loading" class="loading loading-spinner loading-sm"></span>
+        Guardar
+      </button>
+    </div>
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button (click)="onClose()">close</button>
+  </form>
+</dialog>

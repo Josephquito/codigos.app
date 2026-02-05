@@ -1,0 +1,168 @@
+<div class="page">
+  <div class="header">
+    <div>
+      <h1 class="title">Companies</h1>
+      <p class="subtitle">
+        Crea y selecciona tu empresa para trabajar con el sistema.
+      </p>
+    </div>
+
+    <button
+      class="btn btn-neutral"
+      (click)="openCreate()"
+      [disabled]="!canCreate"
+      title="Requiere COMPANIES:CREATE"
+    >
+      Crear company
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <!-- Loading -->
+      <div *ngIf="loading" class="flex items-center gap-2">
+        <span class="loading loading-spinner loading-md"></span>
+        <span>Cargando companies...</span>
+      </div>
+
+      <!-- Tabla -->
+      <div *ngIf="!loading" class="overflow-x-auto">
+        <table class="table table">
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th>Teléfono</th>
+              <th>Status</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr
+              *ngFor="let c of companies"
+              class="company-row"
+              (click)="selectCompany(c)"
+              [class.company-row--active]="isActive(c)"
+            >
+              <td>
+                <div class="font-medium flex items-center gap-2">
+                  {{ c.name }}
+
+                  <!-- Badge de seleccionada -->
+                  <span
+                    *ngIf="isActive(c)"
+                    class="badge badge-neutral badge-sm"
+                  >
+                    Seleccionada
+                  </span>
+                </div>
+              </td>
+
+              <td>{{ c.phone || '—' }}</td>
+
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'badge-success': c.status === 'ACTIVE',
+                    'badge-warning': c.status === 'INACTIVE'
+                  }"
+                >
+                  {{ c.status }}
+                </span>
+              </td>
+
+              <!-- Botón ⋮ (NO selecciona fila) -->
+              <td class="text-right">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  (click)="toggleMenu(c, $event)"
+                  aria-label="Acciones"
+                  title="Acciones"
+                >
+                  ⋮
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="companies.length === 0">
+              <td colspan="4" class="text-center text-gray-500 py-6">
+                No hay companies registradas.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MENÚ FLOTANTE FIXED (SIN SELECCIONAR) -->
+  <div
+    *ngIf="menuOpen && menuCompany"
+    class="fixed z-[99999]"
+    [style.left.px]="menuX"
+    [style.top.px]="menuY"
+    style="transform: translateX(-100%)"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="bg-base-100 shadow rounded-box w-48 border border-base-200">
+      <ul class="menu p-2">
+        <li *ngIf="canMembersRead || canMembersUpdate">
+          <button type="button" (click)="openMembers(menuCompany); closeMenu()">
+            Miembros
+          </button>
+        </li>
+
+        <li *ngIf="canUpdate">
+          <button type="button" (click)="openEdit(menuCompany); closeMenu()">
+            Editar
+          </button>
+        </li>
+
+        <li *ngIf="canDelete">
+          <button
+            type="button"
+            class="text-error"
+            (click)="confirmDelete(menuCompany); closeMenu()"
+          >
+            Eliminar
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Modales -->
+  <app-create-company-modal
+    [open]="createOpen"
+    (close)="closeAll()"
+    (created)="onCreated()"
+  ></app-create-company-modal>
+
+  <app-manage-company-users-modal
+    [open]="membersOpen"
+    [company]="selected"
+    (close)="closeMembers()"
+    (updated)="onMembersUpdated()"
+  ></app-manage-company-users-modal>
+
+  <app-edit-company-modal
+    [open]="editOpen"
+    [company]="selected"
+    (close)="closeAll()"
+    (updated)="onUpdated()"
+  ></app-edit-company-modal>
+
+  <app-delete-company-modal
+    [open]="deleteOpen"
+    [company]="selected"
+    (close)="closeAll()"
+    (deleted)="onDeleted()"
+  ></app-delete-company-modal>
+</div>

@@ -1,17 +1,21 @@
-// src/app/guards/guest.guard.ts
-import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from './auth.service';
+import { Injectable } from '@angular/core';
+import { CanActivate, Router, UrlTree } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
-export const guestGuard: CanActivateFn = () => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
+@Injectable({ providedIn: 'root' })
+export class GuestGuard implements CanActivate {
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+  ) {}
 
-  // Si ya está autenticado, no debe ver /login
-  if (auth.isAuthenticated()) {
-    router.navigateByUrl('/correo-privado'); // o '/cuentas' o lo que quieras como home privada
-    return false;
+  canActivate(): boolean | UrlTree {
+    // ❌ si ya está logueado, no puede entrar a /login
+    if (this.auth.isLoggedIn()) {
+      return this.router.parseUrl('/'); // o /dashboard
+    }
+
+    // ✅ si NO está logueado, sí puede
+    return true;
   }
-
-  return true;
-};
+}
