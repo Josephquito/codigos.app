@@ -7,7 +7,7 @@ type JwtPayload = {
   role?: string;
   [key: string]: any;
 };
-
+// hola
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private router = inject(Router);
@@ -94,7 +94,7 @@ export class AuthService {
       // padding correcto
       const padded = base64.padEnd(
         base64.length + ((4 - (base64.length % 4)) % 4),
-        '='
+        '=',
       );
 
       const json = atob(padded);
