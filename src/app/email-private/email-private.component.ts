@@ -1,19 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  HttpClient,
-  HttpClientModule,
-  HttpHeaders,
-} from '@angular/common/http';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { environment } from '../../environments/environment';
+import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from '../guards/auth.service';
+import { CorreoService, BuzonEmail } from '../services/correo.service';
+import { GmailService } from '../services/gmail.service';
+import { environment } from '../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-email-private',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './email-private.component.html',
 })
 export class EmailPrivateComponent {
@@ -21,17 +19,32 @@ export class EmailPrivateComponent {
   plataforma = '';
 
   emailHtml: SafeHtml = '';
+  buzonEmails: BuzonEmail[] = [];
+  selectedEmail: BuzonEmail | null = null;
+
   cargando = false;
   errorMessage = '';
 
+  get isBuzonMode(): boolean {
+    return this.plataforma === 'buzon';
+  }
+
   constructor(
-    private http: HttpClient,
+    public correoService: CorreoService,
+    private gmailService: GmailService,
+    private auth: AuthService,
     private sanitizer: DomSanitizer,
-    private auth: AuthService
   ) {}
+
+  sanitize(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 
   consultar(): void {
     this.errorMessage = '';
+    this.buzonEmails = [];
+    this.selectedEmail = null;
+    this.emailHtml = this.sanitize('');
 
     const email = this.correo.trim();
     const platform = this.plataforma.trim().toLowerCase();
@@ -41,108 +54,72 @@ export class EmailPrivateComponent {
       return;
     }
 
-    const token = this.auth.getToken();
-    if (!token) {
+    if (!this.auth.getToken()) {
       this.errorMessage = 'Sesión no válida. Vuelve a iniciar sesión.';
       this.auth.forceSessionExpired();
       return;
     }
 
     this.cargando = true;
-    this.emailHtml = this.sanitizer.bypassSecurityTrustHtml('');
 
-    // 1) gmail -> /gmail/alias/:email/platform/:platform
-    if (/@gmail\.com$/i.test(email)) {
-      const url = `${environment.apiUrl}/gmail/alias/${encodeURIComponent(
-        email
-      )}/platform/${encodeURIComponent(platform)}`;
-
-      this.http.get<any>(url, { headers: this.authHeaders() }).subscribe({
+    if (this.isBuzonMode) {
+      this.correoService.getBuzonGeneral(email).subscribe({
         next: (res) => {
-          const content = this.normalizeToHtml(res);
-          this.emailHtml = this.sanitizer.bypassSecurityTrustHtml(content);
+          this.buzonEmails = res;
+          if (res.length > 0) this.selectedEmail = res[0];
           this.cargando = false;
         },
         error: (err) => this.handleErr(err),
       });
+    } else {
+      const isGmail = /@gmail\.com$/i.test(email);
 
-      return;
-    }
-
-    // 2) no gmail -> intentar IMAP catchall primero
-    const urlCatchall = `${
-      environment.apiUrl
-    }/imap/catchall/${encodeURIComponent(email)}/${encodeURIComponent(
-      platform
-    )}`;
-
-    this.http.get<any>(urlCatchall, { headers: this.authHeaders() }).subscribe({
-      next: (res) => {
-        const content = this.normalizeToHtml(res);
-        this.emailHtml = this.sanitizer.bypassSecurityTrustHtml(content);
-        this.cargando = false;
-      },
-      error: (errCatchall) => {
-        // Fallback: intentar IMAP account
-        const urlAccount = `${
-          environment.apiUrl
-        }/imap/account/${encodeURIComponent(email)}/${encodeURIComponent(
-          platform
-        )}`;
-
-        this.http
-          .get<any>(urlAccount, { headers: this.authHeaders() })
+      if (isGmail) {
+        this.gmailService.getEmailsByPlatform(email, platform).subscribe({
+          next: (res) => {
+            this.emailHtml = this.sanitize(
+              this.correoService.normalizeToHtml(res),
+            );
+            this.cargando = false;
+          },
+          error: (err) => this.handleErr(err),
+        });
+      } else {
+        this.correoService
+          .getCorreoPrivadoPorPlataforma(email, platform)
           .subscribe({
-            next: (res2) => {
-              const content = this.normalizeToHtml(res2);
-              this.emailHtml = this.sanitizer.bypassSecurityTrustHtml(content);
+            next: (res) => {
+              this.emailHtml = this.sanitize(
+                this.correoService.normalizeToHtml(res),
+              );
               this.cargando = false;
             },
-            error: (errAccount) => {
-              // mostrar el error más útil
-              this.handleErr(errAccount?.status ? errAccount : errCatchall);
-            },
+            error: (err) => this.handleErr(err),
           });
-      },
-    });
+      }
+    }
   }
 
-  private authHeaders(): HttpHeaders {
-    const token = this.auth.getToken();
-    return new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json',
+  selectEmail(email: BuzonEmail): void {
+    this.selectedEmail = email;
+  }
+
+  formatDate(iso: string): string {
+    if (!iso) return '';
+    return new Date(iso).toLocaleString('es-EC', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 
   private handleErr(err: any): void {
-    if (err?.status === 401) {
-      this.errorMessage = 'Sesión no válida. Vuelve a iniciar sesión.';
-      this.auth.forceSessionExpired();
-      this.cargando = false;
-      return;
-    }
-
     const msg =
       (typeof err?.error === 'string' ? err.error : err?.error?.message) ||
       err?.message ||
       '❌ Error desconocido';
-
-    this.emailHtml = this.sanitizer.bypassSecurityTrustHtml(`<p>${msg}</p>`);
+    this.errorMessage = msg;
     this.cargando = false;
-  }
-
-  private normalizeToHtml(res: any): string {
-    // Gmail controller devuelve { correos: [...] }
-    if (res?.correos && Array.isArray(res.correos)) {
-      return res.correos.join('<hr>');
-    }
-
-    // IMAP probablemente devuelve string[] o similar
-    if (Array.isArray(res)) return res.join('<hr>');
-    if (typeof res === 'string') return res;
-    if (res?.html) return res.html;
-
-    return '<p>No se pudo cargar el contenido.</p>';
   }
 }

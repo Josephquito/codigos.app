@@ -33,11 +33,12 @@
         class="select select-bordered w-full"
         [disabled]="cargando"
       >
-        <option disabled selected value>Selecciona una plataforma</option>
+        <option disabled selected value="">Selecciona una plataforma</option>
+        <option value="buzon">Buzón general</option>
         <option value="disney">Disney</option>
         <option value="netflix">Netflix</option>
         <option value="prime">Prime</option>
-        <option value="chatgpt">Chatgpt</option>
+        <option value="chatgpt">ChatGPT</option>
         <option value="crunchyroll">Crunchyroll</option>
       </select>
 
@@ -56,10 +57,87 @@
 
       <hr />
 
+      <!-- MODO PLATAFORMA -->
       <div
+        *ngIf="!isBuzonMode"
         class="max-h-96 overflow-auto bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200"
         [innerHTML]="emailHtml"
       ></div>
+
+      <!-- MODO BUZÓN GENERAL -->
+      <ng-container *ngIf="isBuzonMode">
+        <p
+          *ngIf="!cargando && buzonEmails.length === 0"
+          class="text-center text-gray-400 text-sm py-4"
+        >
+          Ingresa un correo y consulta para ver los últimos 5 emails.
+        </p>
+
+        <div *ngIf="buzonEmails.length > 0" class="flex gap-4 min-h-[400px]">
+          <!-- Lista izquierda -->
+          <div
+            class="w-56 flex-shrink-0 flex flex-col gap-2 overflow-y-auto max-h-[500px]"
+          >
+            <div
+              *ngFor="let mail of buzonEmails"
+              (click)="selectEmail(mail)"
+              class="cursor-pointer rounded-lg border p-3 transition-all"
+              [class.bg-neutral]="selectedEmail === mail"
+              [class.text-white]="selectedEmail === mail"
+              [class.border-neutral]="selectedEmail === mail"
+              [class.border-gray-200]="selectedEmail !== mail"
+              [class.hover:bg-gray-50]="selectedEmail !== mail"
+            >
+              <p class="text-xs font-semibold truncate">
+                {{ mail.from || "(sin remitente)" }}
+              </p>
+              <p
+                class="text-xs truncate mt-0.5"
+                [class.text-gray-200]="selectedEmail === mail"
+                [class.text-gray-500]="selectedEmail !== mail"
+              >
+                {{ mail.subject || "(sin asunto)" }}
+              </p>
+              <p
+                class="text-xs mt-1"
+                [class.text-gray-300]="selectedEmail === mail"
+                [class.text-gray-400]="selectedEmail !== mail"
+              >
+                {{ formatDate(mail.date) }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Contenido derecha -->
+          <div
+            class="flex-1 border border-gray-200 rounded-lg overflow-auto max-h-[500px] bg-gray-50"
+          >
+            <ng-container *ngIf="selectedEmail; else noSelected">
+              <div
+                class="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-10"
+              >
+                <p class="text-sm font-semibold text-gray-800 truncate">
+                  {{ selectedEmail.subject || "(sin asunto)" }}
+                </p>
+                <p class="text-xs text-gray-500 mt-0.5">
+                  <span class="font-medium">De:</span> {{ selectedEmail.from }}
+                </p>
+                <p class="text-xs text-gray-400">
+                  {{ formatDate(selectedEmail.date) }}
+                </p>
+              </div>
+              <div class="p-4" [innerHTML]="sanitize(selectedEmail.html)"></div>
+            </ng-container>
+            <ng-template #noSelected>
+              <div
+                class="flex items-center justify-center h-full text-gray-400 text-sm p-4"
+              >
+                Selecciona un correo para ver su contenido
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>
